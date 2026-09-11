@@ -1,7 +1,7 @@
 # WebUI
 
-入口是项目根目录 `whitebox_app.py`，静态文件是 `whitebox_ui/`。任务经根目录 `run.Engine` 执行，
-NR 由 TileLang 完成；冻结的 `reference/whitebox_app.py` 不被修改或调用。导入与状态查询不加载
+入口是项目根目录 `whitebox_app.py`，静态文件是 `webui/`。任务经根目录 `run.Engine` 执行，
+NR 由 TileLang 完成；旧参考 WebUI/CLI 不再保留，只有根目录这一套应用入口。导入与状态查询不加载
 Torch / NR / TileLang，也不自动监听或打开浏览器。
 
 ## 使用

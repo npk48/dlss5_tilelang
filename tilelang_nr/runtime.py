@@ -155,13 +155,13 @@ class TileLangNR(PlanRuntime):
             coverage=[self.coverage[k] for k in self.entries if k in self.coverage],
             tilelang_compile_seconds=self.port_compile_seconds,
             reference_preparation=
-            "native modules prepared for plan metadata only; no original Step execution"
+            "pure-Python plan metadata; every logical Step executes a TileLang kernel"
         )
         return result
 
 
 class OrganizedTileLangNR(TileLangNR):
-    """Choose one factory per native logical Step, with the original cache lifecycle."""
+    """Choose one factory per logical Step, with the original cache lifecycle."""
     organization = "vit"
 
     def _resolve_family(self, name):
@@ -169,7 +169,7 @@ class OrganizedTileLangNR(TileLangNR):
 
     def _build_function(self, family, spec):
         function = family.build_step(spec)
-        if family.__name__ != "tilelang_nr.vit_bridge":
+        if family.__name__ != "tilelang_nr.kernels.vit_bridge":
             return function
 
         def dispatch():
@@ -188,21 +188,21 @@ class OrganizedTileLangNR(TileLangNR):
         coverage["selected_factories"] = dict(counts)
         coverage["factory_builds"] = sum(counts.values())
         coverage["superseded_factory_builds"] = 0
-        coverage["joint_packet_steps"] = counts["tilelang_nr.heads24"]
+        coverage["joint_packet_steps"] = counts["tilelang_nr.kernels.heads24"]
         # The latest Eight organization owns UP8, so no separate UP8 factory is built.
         coverage["physical_up8_steps"] = 0
         assert coverage["joint_packet_steps"] == 21, "Incomplete 2H/4H packet plan"
         if self.organization in ("shallow", "eight", "vit"):
-            coverage["shallow_joint_steps"] = counts["tilelang_nr.shallow_endpoints"]
+            coverage["shallow_joint_steps"] = counts["tilelang_nr.kernels.shallow_endpoints"]
             assert coverage["shallow_joint_steps"] == 10, "Incomplete shallow plan"
         if self.organization in ("eight", "vit"):
-            coverage["eight_joint_steps"] = counts["tilelang_nr.heads8"]
+            coverage["eight_joint_steps"] = counts["tilelang_nr.kernels.heads8"]
             assert coverage["eight_joint_steps"] == 16, "Incomplete Eight plan"
         if self.organization == "vit":
             names = Counter(
                 spec.name for *_,
                 spec,
-                family in records if family.__name__ == "tilelang_nr.vit_bridge"
+                family in records if family.__name__ == "tilelang_nr.kernels.vit_bridge"
             )
             expected = {
                 name: (2 if name == "matrix_phase" else 8)
@@ -217,7 +217,7 @@ class OrganizedTileLangNR(TileLangNR):
             }
             assert dict(names) == expected, ("Incomplete ViT/bridge plan", dict(names))
             assert len(records) == 193 and coverage["factory_builds"] == 193
-            coverage["vit_joint_steps"] = counts["tilelang_nr.vit_bridge"]
+            coverage["vit_joint_steps"] = counts["tilelang_nr.kernels.vit_bridge"]
             coverage["vit_joint_families"] = dict(names)
 
     def report(self):
@@ -236,21 +236,7 @@ class OrganizedTileLangNR(TileLangNR):
         return result
 
 
-class JointPacketTileLangNR(OrganizedTileLangNR):
-    """Historical packet organization retained for explicit diagnostics."""
-    organization = "packet"
-
-
-class ShallowJointTileLangNR(OrganizedTileLangNR):
-    """Historical shallow plus packet organization, without installation layering."""
-    organization = "shallow"
-
-
-class EightJointTileLangNR(OrganizedTileLangNR):
-    """Historical Eight organization, without installation layering."""
-    organization = "eight"
-
 
 class VitJointTileLangNR(OrganizedTileLangNR):
-    """Public 797fd63 algorithm combination; never aliases the ordinary strict backend."""
+    """The single public 797fd63 VitJoint algorithm combination."""
     organization = "vit"

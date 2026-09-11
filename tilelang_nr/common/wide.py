@@ -1,6 +1,6 @@
 """Wide Half arithmetic, physical addresses and original scalar packet routes."""
 import tilelang.language as T
-from device_policy import TARGET, EXECUTION_BACKEND, CONFIG
+from runtime.device import TARGET, EXECUTION_BACKEND, CONFIG
 from tilelang_nr.instructions import instruction_source
 
 _PRIMITIVES = instruction_source("wide_primitives.cuh")

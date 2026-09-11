@@ -1,7 +1,7 @@
 # TileLang NR 源码导览
 
 按实际计算功能组织。算法组合以 797fd63 的 `VitJointTileLangNR` 为准，公开入口经
-`run.Engine` → `backend.Backend` → `runtime.VitJointTileLangNR` → `registry.resolve(organization='vit')`，
+`run.Engine` → `app.backend.Backend` → `runtime.VitJointTileLangNR` → `registry.resolve(organization='vit')`，
 **每个被选中的 Step 只构建一次**。
 
 ## 从公开入口追到计算
@@ -12,12 +12,12 @@
 | `registry.py` | 唯一的 `vit` 组织：按名字直接选定工厂 |
 | `spec.py` | `StepSpec` / `BufferViews`：把计划里的指针解析成非拷贝 Torch 视图 |
 | `plan/` | 纯 Python 计划：arena 布局、aux 轨道、buffer 归属、每步几何与 typed 参数 |
-| `shallow_endpoints.py` | 1H 浅层、block0 输入/池化、post70 输出；10 个逻辑 Step |
-| `heads24.py` | 2H/4H FFN、attention、projection、DS/UP；21 个逻辑 Step |
-| `heads8.py`、`heads8_layout.py` | 8H 五种角色、DS 行归属和 portrait UP 的物理投影；16 个逻辑 Step |
-| `heads16_bridge.py` | 16H、local64、raw/partial 发布、merge、repack、UP 出口；102 个逻辑 Step |
-| `vit_bridge.py` | 八组 ViT 的矩阵/QKV/attention，以及 57/100 物理桥；42 个逻辑 Step |
-| `utility.py` | 原计数器/状态清理和 pool padding |
+| `kernels/shallow_endpoints.py` | 1H 浅层、block0 输入/池化、post70 输出；10 个逻辑 Step |
+| `kernels/heads24.py` | 2H/4H FFN、attention、projection、DS/UP；21 个逻辑 Step |
+| `kernels/heads8.py`、`kernels/heads8_layout.py` | 8H 五种角色、DS 行归属和 portrait UP 的物理投影；16 个逻辑 Step |
+| `kernels/heads16_bridge.py` | 16H、local64、raw/partial 发布、merge、repack、UP 出口；102 个逻辑 Step |
+| `kernels/vit_bridge.py` | 八组 ViT 的矩阵/QKV/attention，以及 57/100 物理桥；42 个逻辑 Step |
+| `kernels/utility.py` | 原计数器/状态清理和 pool padding |
 | `common/` | 共享 Half 运算、MMA fragment、物理地址/路由、completion ABI 和默认 stream 的调用封装 |
 | `instructions/` | 小 PTX、packed-Half、访存指令适配；计算循环与布局仍在真实 TileLang DSL 中 |
 

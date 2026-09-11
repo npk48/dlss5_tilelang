@@ -1,16 +1,16 @@
 """Independent manifest application: explicit Torch or TileLang backend."""
 import argparse,json,time
 from pathlib import Path
-import bootstrap
+from runtime import bootstrap
 
 class Engine:
     """One frozen model/backend per process; jobs get independent pipeline states."""
     def __init__(self,*,fast_load=True):
         import dlss5_model as nr
-        from backend import Backend
+        from app.backend import Backend
         tick=time.perf_counter()
         if fast_load:
-            from fast_load import load_model
+            from runtime.model_loader import load_model
             self.model,self.load_report=load_model(nr,bootstrap.REFERENCE/'weights_ht_blob.bin',device='cuda')
         else:
             self.model=nr.load_model(bootstrap.REFERENCE/'weights_ht_blob.bin',device='cuda')
@@ -20,7 +20,7 @@ class Engine:
         self.backend.close()
 
     def run(self,manifest,output,*,backend='tilelang',quiet=False,cancel=None,progress=None,before_frame=None):
-        from execution import run_manifest
+        from app.execution import run_manifest
         if backend not in ('torch','tilelang'):raise ValueError('Unknown backend')
         output=Path(output)
         before=self.backend.report()
@@ -34,20 +34,20 @@ class Engine:
             proc,report=run_manifest(manifest,output,model=self.model,quiet=quiet,cancel=cancel,progress=observed_progress,before_frame=before_frame,
                                     compute_backend=before['backend'] if backend=='tilelang' else 'PyTorch')
         after=self.backend.report()
-        native=dict(after['nr'])
-        native['total_calls']=native['calls']
+        nr_state=dict(after['nr'])
+        nr_state['total_calls']=nr_state['calls']
         for key in ('calls','samples','failures','prepare_seconds','compile_seconds'):
-            native[key]=native.get(key,0)-before['nr'].get(key,0)
-        if not native['calls']:native['last_frame']=None
+            nr_state[key]=nr_state.get(key,0)-before['nr'].get(key,0)
+        if not nr_state['calls']:nr_state['last_frame']=None
         counters={k:v-before['counters'].get(k,0) for k,v in after['counters'].items()}
-        actual='torch' if backend=='torch' else self.backend.nr_backend if native['calls'] else 'not-run'
-        native.update(selected_backend='torch' if backend=='torch' else self.backend.nr_backend,
+        actual='torch' if backend=='torch' else self.backend.nr_backend if nr_state['calls'] else 'not-run'
+        nr_state.update(selected_backend='torch' if backend=='torch' else self.backend.nr_backend,
                       actual_backend=actual,shapes=[{'height':h,'width':w} for h,w in sorted(job_shapes)])
-        stats={**after,'counters':counters,'nr':native,'selected_backend':backend,'nr_backend':actual,
+        stats={**after,'counters':counters,'nr':nr_state,'selected_backend':backend,'nr_backend':actual,
                'model_load_seconds':self.load_seconds,'model_loader':self.load_report,'run_seconds':report['seconds']}
         if backend=='torch':
             stats['backend']='PyTorch';stats['precision']='Frozen Torch reference; TileLang NR is inactive'
-        report.update(nr_backend=actual,nr=native)
+        report.update(nr_backend=actual,nr=nr_state)
         (output/'report.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
         (output/'backend.json').write_text(json.dumps(stats,indent=2),encoding='utf-8')
         return proc,report,stats

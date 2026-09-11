@@ -2,8 +2,8 @@
 import torch
 import tilelang
 import tilelang.language as T
-from fp8_toolchain import private_compile
-from device_policy import TARGET, EXECUTION_BACKEND
+from runtime.fp8_compiler import private_compile
+from runtime.device import TARGET, EXECUTION_BACKEND
 from tilelang_nr.instructions import instruction_source
 
 _HEADER = instruction_source("deep_primitives.h")

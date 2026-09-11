@@ -23,11 +23,15 @@ NR 的计划（arena 布局、buffer 归属、每步 launch 几何与参数）�
 
 | 层 | 位置 | 说明 |
 | --- | --- | --- |
-| NR 计算 | `tilelang_nr/*.py` | `VitJointTileLangNR`（算法基准 797fd63）：utility / shallow / 2H-4H / 8H / 16H / ViT-物理桥，共 193 个逻辑 Step |
+| NR 计算 | `tilelang_nr/kernels/` | `VitJointTileLangNR`（算法基准 797fd63）：utility / shallow / 2H-4H / 8H / 16H / ViT-物理桥，共 193 个逻辑 Step |
 | NR 计划 | `tilelang_nr/plan/` | 纯 Python/Torch：arena 与 aux 布局、buffer 归属、每步几何与 typed 参数；无编译、无 CUDA kernel |
-| Host 管线 | `fsr_*.py`、`flow_pipeline.py`、`depth_attention.py`、`temporal_inputs.py`、`nr_chain_pipeline.py` | FSR reconstruct/locks、accumulate、depth-clip、RAFT-small 适配、DINO 概率发布、时域输入准备、NR-chain 输入/输出 |
+| FSR | `pipeline/fsr/` | reconstruct/locks、depth-clip、history sample、accumulate |
+| Guides | `pipeline/guides/` | RAFT-small 光流、DINO 度量深度、时域输入 |
+| NR chain | `pipeline/nr_chain.py` | NR 输入、历史与输出混合 |
+| 应用调度 | `app/` | scoped backend dispatch 与 manifest 执行 |
+| 运行设施 | `runtime/` | reference bootstrap、设备策略、模型加载、FP8 编译器 |
 | 冻结参考 | `reference/` | 逐字节不变的模型、权重与 `whitebox_pipeline` 包 |
-| 调度 | `backend.py`、`run.py`、`execution.py` | 线程局部 dispatch：替换 NR 图 + 加速外围阶段 |
+| WebUI | `whitebox_app.py`、`webui/` | 唯一服务入口与静态前端 |
 
 `tilelang_nr/README.md` 给出从公开入口追到计算的文件导览。
 
@@ -37,7 +41,7 @@ NR 的计划（arena 布局、buffer 归属、每步 launch 几何与参数）�
    TileLang 0.1.14 / CUDA 12.9 bindings）。
 2. `reference/weights_ht_blob.bin` 与 `reference/guide_models/*.pth`：冻结权重，随工作树提供，不入 Git。
 3. `.toolchains/cuda12.8/`：项目私有的 CUDA 12.8 NVRTC + CCCL + runtime。TileLang 的 FP8 内核
-   （E4M3 转换与 F16 累加）需要 NVRTC ≥ 12.8，由 `fp8_toolchain.private_compile` 只在编译这些内核时
+   （E4M3 转换与 F16 累加）需要 NVRTC ≥ 12.8，由 `runtime.fp8_compiler.private_compile` 只在编译这些内核时
    挂载，系统环境不变。缺它则内核编译直接报错。同样不入 Git。
 4. GPU 需 SM89（RTX 40 系），且 NR 只在默认 CUDA stream 上验证。
 

@@ -187,10 +187,10 @@ class JobManager:
             if data.get(source) is not None:
                 job[target] = copy.deepcopy(data[source])
         if isinstance(data.get('nr'), dict):
-            native = copy.deepcopy(data['nr'])
-            job['nr'] = native
-            if native.get('calls') is not None:
-                job['new_nr_calls'] = native['calls']
+            nr_state = copy.deepcopy(data['nr'])
+            job['nr'] = nr_state
+            if nr_state.get('calls') is not None:
+                job['new_nr_calls'] = nr_state['calls']
 
     def _apply_report(self, job, report):
         for field in ('processed_frames', 'seconds'):
@@ -287,7 +287,7 @@ class JobManager:
 
 
 def create_app(*, workspace=None, model_dir=None, engine_factory=None):
-    app = Flask(__name__, static_folder=str(ROOT / 'whitebox_ui'), static_url_path='/ui')
+    app = Flask(__name__, static_folder=str(ROOT / 'webui'), static_url_path='/ui')
     app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 1024
     manager = JobManager(workspace or Path.home() / '.dlss5-tilelang-whitebox' / 'jobs', model_dir, engine_factory)
     app.extensions['whitebox_jobs'] = manager
@@ -302,7 +302,7 @@ def create_app(*, workspace=None, model_dir=None, engine_factory=None):
 
     @app.get('/')
     def index():
-        return send_file(ROOT / 'whitebox_ui/index.html')
+        return send_file(ROOT / 'webui/index.html')
 
     @app.get('/api/status')
     def status():
