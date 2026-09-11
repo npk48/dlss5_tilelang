@@ -21,11 +21,13 @@ cd c:\work\dlss5_remake
    视频编解码依赖已安装的 FFmpeg/FFprobe。
 2. 计算路线只有两条：`tilelang-vit`（默认，TileLang NR）与 `torch`（全 Torch 参考，不经过 NR dispatch）。
    不自动切换、不静默回退。
-3. 输出尺寸与可选 NR work size 原样传给 Engine。UI 不强制 1088×1920，不另做缩放或 padding；
-   后端继续原 `neural_size` 策略，状态显示真实 `last_frame.neural_hw`。首次 shape 准备/编译可能较慢。
-4. 点击加入队列。只有一个 worker 和一个成功加载的 Engine，最多 16 个活跃/排队任务；
+3. 首页只保留路线、输入、文件和输出尺寸；编码、NR work size、pass、FOV 与 manifest 收进“高级设置”。
+   UI 不强制 1088×1920，后端继续原 `neural_size` 策略。
+4. WebUI 将首次 NR kernel 加载/编译与正式推理分开：先按真实 `neural_size` 做一次无状态 dummy NR 预热并同步，
+   不消费 NRChain/FSR/guide 历史；随后才处理输入。页面分别显示 setup 秒数、正式 inference 调用与逐帧耗时。
+5. 点击开始处理。只有一个 worker 和一个成功加载的 Engine，最多 16 个活跃/排队任务；
    独立 pipeline 历史由 `Engine.run` 每次创建。
-5. 取消通过真实 cancel 回调在安全边界生效，已完成的 PNG/NPY 保留；下一帧 reset 通过真实
+6. 取消通过真实 cancel 回调在安全边界生效，已完成的 PNG/NPY 保留；下一帧 reset 通过真实
    `before_frame` 回调消费一次。
 
 HDR 真输出仍是 float NPY；PNG/MP4 为 SDR 预览。完整配置、每帧记录、报告与后端记录可下载。
@@ -40,15 +42,16 @@ proc, report, stats = engine.run(
     manifest, output, backend='tilelang',   # 'tilelang' 或 'torch'
     quiet=True, cancel=cancel_event.is_set,
     progress=progress, before_frame=before_frame,
+    prewarm_nr=True,  # WebUI：独立 NR setup 阶段
 )
 ```
 
-- `progress`：stage、message、processed_frames、total_frames_estimate、last_frame、seconds。
+- `progress`：stage、message、processed_frames、total_frames_estimate、last_frame、seconds、setup。
 - `before_frame(index)`：有 reset 请求时返回 `{'reset': True, 'reset_reason': 'UI explicit reset'}`，消费后返回 None。
 - `report`：status、processed_frames、seconds、frames、video_output；可选 `stage_timings`。
 - `stats.nr`：`selected_backend`、`actual_backend`、`calls`、`fallback_calls`、
-  `shapes: [{height,width}]`、`prepare_seconds`、`compile_seconds`。`calls` 是本任务新 NR 的实际调用，
-  不是 Engine 生命周期累计。
+  `shapes: [{height,width}]`、`prepare_seconds`、`compile_seconds`、`warmup_calls`、`inference_calls`。
+  `calls` 包含本任务预热与正式推理，后两项明确拆分；所有计数都不是 Engine 生命周期累计。
 - 实际 neural size 来自 `last_frame.neural_hw`。缺失的调用数、shape 准备、编译与 stage timing 显示“未测”，
   不根据选择或 pass 数推断为 0。
 

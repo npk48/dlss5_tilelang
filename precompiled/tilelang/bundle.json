@@ -1,0 +1,22 @@
+{
+  "bundle_id": "a413ad43e7ef53288851972cedd9fce980374b3f94827eb0c5c21807178b9cd5",
+  "tilelang_version": "0.1.14",
+  "platform": "win32-AMD64",
+  "target": "cuda -arch=sm_89",
+  "qualified_workload": {
+    "webui_output_hw": [
+      510,
+      549
+    ],
+    "nr_neural_hw": [
+      512,
+      640
+    ],
+    "mode": "rgb_estimated",
+    "nr_passes": 1
+  },
+  "kernel_entries": 85,
+  "files": 510,
+  "bytes": 41730208,
+  "source": "Compiled from an empty repo-local cache with C:/work/dlss5_remake/.venv; cache-only replay passed with an intentionally missing CUDA toolchain."
+}

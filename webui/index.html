@@ -1,28 +1,45 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>白箱图像管线</title>
-<style>body{font:15px system-ui,sans-serif;background:#101721;color:#dee8f3;margin:0}main{max-width:1160px;margin:auto;padding:24px}h1{font-size:24px}section{background:#192431;padding:20px;border-radius:12px;margin:16px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}label{display:flex;flex-direction:column;gap:6px;color:#adc0d4}input,select,textarea,button{font:inherit;padding:9px;border:1px solid #496176;border-radius:6px;background:#101c29;color:#eef5ff}button{cursor:pointer;background:#244e6c}button:disabled{opacity:.45;cursor:default}textarea{width:100%;box-sizing:border-box;font:13px monospace;min-height:180px}small{color:#b8c5d2}.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}#preview{max-width:100%;max-height:65vh;display:none;background:repeating-conic-gradient(#333 0 25%,#555 0 50%) 0/16px 16px}a{color:#85ceff}progress{width:100%;height:20px}.warn{color:#ffd88b}#error{color:#ffb5b5}.job{padding:8px;cursor:pointer;border-bottom:1px solid #36475a}.inline{flex-direction:row;align-items:center}#outputFiles{max-height:240px;overflow:auto;display:flex;gap:12px;flex-wrap:wrap}</style>
-</head><body><main><h1>白箱时域 + NR 图像管线</h1><div id="model">模型尚未加载</div><small>本地处理 · 固定NR权重 · RGB使用估计guides而非真实几何 · 无运行时下载</small>
-<section><div class="grid">
-<label>计算路线<select id="nrBackend"><option value="tilelang-vit">TileLang NR（VitJoint）</option><option value="torch">全Torch参考</option></select></label>
-<label>输入类型<select id="kind"><option value="video">视频（逐帧处理）</option><option value="images">批量独立图片（逐张reset）</option><option value="sequence">连续图像序列</option></select></label>
-<label>文件<input id="files" type="file" multiple></label>
-<label>输出高度<input id="height" type="number" min="32" value="540"></label><label>输出宽度<input id="width" type="number" min="32" value="960"></label>
-<label>输入编码<select id="encoding"><option>sRGB</option><option>linear</option><option>linear709_nits</option><option>PQ2020</option></select></label>
-<label>视频transfer（未标注时需选择）<select id="transfer"><option value="">自动读取标签</option><option value="BT709">明确按BT.709解释</option><option value="sRGB">明确按sRGB解释</option><option value="PQ">PQ/ST.2084</option></select></label>
-<label>视频YUV矩阵<select id="matrix"><option value="">自动读取标签</option><option value="bt709">明确BT.709</option><option value="bt601">明确BT.601</option><option value="bt2020">明确BT.2020</option></select></label>
-<label>最多视频帧数（空=全部）<input id="limit" type="number" min="1"></label>
-<label>NR pass数量<input id="passes" type="number" min="1" max="30" value="1"></label><label>Local Structure<input id="structure" type="number" step=".1" value="2"></label>
-<label>NR工作高度（空=输出）<input id="workH" type="number" min="32"></label><label>NR工作宽度（空=输出）<input id="workW" type="number" min="32"></label>
-<label>NR差分放大<select id="resample"><option value="bilinear">Bilinear差分</option><option value="easu">EASU差分（仅放大）</option></select></label>
-<label>全局输出mix<input id="mix" type="number" min="0" max="1" step=".1" value="1"></label>
-<label>假设垂直FOV（度）<input id="fov" type="number" min="1" max="179" value="60"></label>
-<label class="inline"><input id="mp4" type="checkbox">额外静音SDR MP4预览</label></div>
-<p class="warn">新CUDA仅指NR，外围使用TileLang路线，并非整条管线CUDA。尺寸沿用原neural_size策略，不固定到1088×1920，不自动退回旧NR。编译和shape准备可能耗时，不承诺实时。</p>
-<p class="warn">HDR真输出为float NPY；PNG/MP4是SDR预览。MP4不保留alpha/音频；RGBA请用帧序列。连续图片按文件名排序（建议零补齐序号）。相机参数是明确假设，不是自动标定。</p>
-<div class="row"><button id="generate">生成manifest</button><label class="inline"><input id="advanced" type="checkbox">使用下方manifest（guided、HDR、保护、帧级参数）</label></div>
-<textarea id="spec" spellcheck="false"></textarea><p><button id="start">加入任务队列</button></p><div id="error" role="alert"></div></section>
-<section><div class="row"><strong id="jobTitle">尚无任务</strong><button id="cancel" disabled>取消任务</button><button id="reset" disabled>下一帧显式reset</button></div><p id="stage"></p><progress id="progress" max="1" value="0"></progress><p id="counts"></p>
-<pre id="metrics">实际尺寸、调用数和耗时：未测</pre><img id="preview" alt="最近完成帧"><div class="row" id="downloads"></div>
-<details id="outputList"><summary>全部输出文件（含已完成帧）</summary><div id="outputFiles"></div><div class="row"><button id="prevFiles">上一页</button><span id="filePage"></span><button id="nextFiles">下一页</button></div></details>
-<details><summary>有效设置、分辨率与guide来源</summary><pre id="details"></pre></details></section><section><h3>最近任务（每项历史独立）</h3><div id="jobs"></div></section></main>
-<script src="/ui/app.js" defer></script></body></html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DLSS5 白箱</title>
+<style>
+:root{color-scheme:dark;--bg:#0d141d;--panel:#151f2b;--line:#2d4052;--text:#edf4fb;--muted:#9fb1c2;--blue:#4ba3d9;--green:#54c993;--red:#ffaaa8}*{box-sizing:border-box}body{font:15px system-ui,sans-serif;background:var(--bg);color:var(--text);margin:0}main{max-width:1040px;margin:auto;padding:24px}header{margin-bottom:18px}h1{font-size:24px;margin:0 0 6px}.muted,small{color:var(--muted)}section{background:var(--panel);padding:18px;border:1px solid #223343;border-radius:12px;margin:14px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:12px}label{display:flex;flex-direction:column;gap:6px;color:#b9cad9}input,select,textarea,button{font:inherit;padding:9px;border:1px solid #405a70;border-radius:7px;background:#0d1823;color:var(--text)}button{cursor:pointer;background:#20577a;border-color:#357ba5}button.primary{font-weight:650;padding:10px 20px}button:disabled{opacity:.45;cursor:default}textarea{width:100%;min-height:170px;font:12px ui-monospace,monospace}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.inline{flex-direction:row;align-items:center}.note{color:#c9d6e1;margin:12px 0 0}.phases{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}.phase{padding:10px 12px;border:1px solid var(--line);border-radius:8px;color:var(--muted)}.phase.active{border-color:var(--blue);color:#d9f1ff;background:#173247}.phase.done{border-color:#37785e;color:#b9f2d4;background:#163126}progress{width:100%;height:16px}.statusline{margin:8px 0}#error{color:var(--red)}#preview{max-width:100%;max-height:64vh;display:none;margin-top:12px;background:repeating-conic-gradient(#333 0 25%,#555 0 50%) 0/16px 16px}a{color:#8bd3ff}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;color:#bfcddd}.job{display:block;width:100%;text-align:left;padding:9px;margin:5px 0;background:#111d28;border-color:#293d4f}details{margin-top:13px}summary{cursor:pointer;color:#c7d7e5}#outputFiles{max-height:220px;overflow:auto;display:flex;gap:10px;flex-wrap:wrap}
+</style></head><body><main>
+<header><h1>DLSS5 白箱</h1><div id="model" class="muted">Engine 尚未加载</div></header>
+<section>
+  <div class="grid">
+    <label>计算路线<select id="nrBackend"><option value="tilelang-vit">TileLang NR</option><option value="torch">Torch 参考</option></select></label>
+    <label>输入类型<select id="kind"><option value="images">独立图片</option><option value="sequence">连续图片序列</option><option value="video">视频</option></select></label>
+    <label>选择文件<input id="files" type="file" multiple></label>
+    <label>输出尺寸（高 × 宽）<span class="row"><input id="height" type="number" min="32" value="540" style="width:46%"><input id="width" type="number" min="32" value="960" style="width:46%"></span></label>
+  </div>
+  <p class="note">首次使用一个新尺寸会加载或编译 kernels；同尺寸后续任务直接复用缓存。</p>
+  <div class="row"><button class="primary" id="start">开始处理</button><span id="error" role="alert"></span></div>
+  <details><summary>高级设置</summary>
+    <div class="grid" style="margin-top:12px">
+      <label>输入编码<select id="encoding"><option>sRGB</option><option>linear</option><option>linear709_nits</option><option>PQ2020</option></select></label>
+      <label>视频 transfer<select id="transfer"><option value="">自动</option><option value="BT709">BT.709</option><option value="sRGB">sRGB</option><option value="PQ">PQ/ST.2084</option></select></label>
+      <label>视频 YUV 矩阵<select id="matrix"><option value="">自动</option><option value="bt709">BT.709</option><option value="bt601">BT.601</option><option value="bt2020">BT.2020</option></select></label>
+      <label>最多视频帧<input id="limit" type="number" min="1" placeholder="全部"></label>
+      <label>NR pass 数量<input id="passes" type="number" min="1" max="30" value="1"></label>
+      <label>Local Structure<input id="structure" type="number" step=".1" value="2"></label>
+      <label>NR 工作高度<input id="workH" type="number" min="32" placeholder="跟随输出"></label>
+      <label>NR 工作宽度<input id="workW" type="number" min="32" placeholder="跟随输出"></label>
+      <label>NR 差分缩放<select id="resample"><option value="bilinear">Bilinear</option><option value="easu">EASU（仅放大）</option></select></label>
+      <label>输出 Mix<input id="mix" type="number" min="0" max="1" step=".1" value="1"></label>
+      <label>垂直 FOV（度）<input id="fov" type="number" min="1" max="179" value="60"></label>
+      <label class="inline"><input id="mp4" type="checkbox">生成静音 SDR MP4 预览</label>
+    </div>
+    <div class="row" style="margin-top:12px"><button id="generate">生成 manifest</button><label class="inline"><input id="advanced" type="checkbox">直接使用下方 manifest</label></div>
+    <textarea id="spec" spellcheck="false"></textarea>
+    <small>HDR 真输出为 float NPY，PNG/MP4 仅作 SDR 预览。RGB 模式使用估计 guides，不代表真实几何。</small>
+  </details>
+</section>
+<section>
+  <div class="row"><strong id="jobTitle">尚无任务</strong><button id="cancel" disabled>取消</button><button id="reset" disabled>下一帧 Reset</button></div>
+  <div class="phases"><div id="setupPhase" class="phase">1　加载模型与 kernels</div><div id="inferPhase" class="phase">2　推理与输出</div></div>
+  <p id="stage" class="statusline"></p><progress id="progress" max="1" value="0"></progress><p id="counts" class="muted"></p>
+  <img id="preview" alt="最近完成帧"><div class="row" id="downloads"></div>
+  <details><summary>技术指标</summary><pre id="metrics">尚未测量</pre><pre id="details"></pre></details>
+  <details id="outputList"><summary>全部输出文件</summary><div id="outputFiles"></div><div class="row"><button id="prevFiles">上一页</button><span id="filePage"></span><button id="nextFiles">下一页</button></div></details>
+</section>
+<section><details open><summary>最近任务</summary><div id="jobs"></div></details></section>
+<script src="/ui/app.js" defer></script></main></body></html>

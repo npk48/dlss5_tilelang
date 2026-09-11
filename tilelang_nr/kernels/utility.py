@@ -64,7 +64,17 @@ def build_step(spec):
         return _bind(kernel, counters, status)
     if spec.name == "pool8_padding":
         arena = spec.tensor(0)
+        offset, height, width, pool_height, pool_width = [spec.scalar(i) for i in range(1, 6)]
+        # A fully covered pool has no bytes to clear. Compiling this no-op lets
+        # TVM erase every kernel parameter, which TileLang 0.1.14's NVRTC
+        # adapter cannot represent (it emits the invalid `arg_values =`).
+        if (pool_height - 1) * 2 < height and (pool_width - 1) * 2 < width:
+            def run():
+                pass
+            run.kernel_launches = 0
+            run.workspace_bytes = 0
+            return run
         with private_compile():
-            kernel = _padding(arena.numel(), *[spec.scalar(i) for i in range(1, 6)])
-        return _bind(kernel, arena, spec.scalar(1))
+            kernel = _padding(arena.numel(), offset, height, width, pool_height, pool_width)
+        return _bind(kernel, arena, offset)
     raise NotImplementedError(spec.name)

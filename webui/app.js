@@ -4,9 +4,17 @@ let active = null, lastPreview = '', busy = false, fileOffset = 0, refreshReques
 const number = id => Number($(id).value);
 const measured = value => value == null ? '未测' : typeof value === 'object' ? JSON.stringify(value) : String(value);
 const seconds = value => typeof value === 'number' ? `${value.toFixed(2)} s` : '未测';
-const stages = {queued:'排队', loading_engine:'加载本地Engine', loading_model:'加载本地模型',
-  preparing_pipeline:'准备管线 / shape（首次可能编译）', preparing_nr:'准备NR shape / 编译',
-  compiling_nr:'编译NR', processing:'逐帧处理', completed:'完成', cancelled:'已取消', failed:'失败'};
+const stages = {queued:'排队', loading_engine:'加载 Engine', loading_model:'加载模型',
+  preparing_pipeline:'准备管线', preparing_nr:'首次加载 kernels / 新尺寸编译',
+  compiling_nr:'编译 kernels', processing:'推理与输出', completed:'完成', cancelled:'已取消', failed:'失败'};
+const setupStages = new Set(['queued','loading_engine','loading_model','preparing_pipeline','preparing_nr','compiling_nr']);
+function renderPhases(job) {
+  const setup = $('setupPhase'), infer = $('inferPhase');
+  setup.className = 'phase'; infer.className = 'phase';
+  if (job.status === 'completed') { setup.classList.add('done'); infer.classList.add('done'); return; }
+  if (job.stage === 'processing' || job.processed_frames > 0) { setup.classList.add('done'); infer.classList.add('active'); return; }
+  if (setupStages.has(job.stage) || job.status === 'failed') setup.classList.add('active');
+}
 function manifest() {
   const files = [...$('files').files].sort((a,b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
   if (!files.length) throw Error('请选择输入文件');
@@ -90,7 +98,8 @@ $('prevFiles').onclick = () => { fileOffset = Math.max(0,fileOffset-100); poll()
 $('nextFiles').onclick = () => { fileOffset += 100; poll(); };
 function render(job) {
   const terminal = ['completed','failed','cancelled'].includes(job.status), native = job.nr || {};
-  $('jobTitle').textContent = `任务 ${job.id.slice(0,8)} · ${job.status}`;
+  renderPhases(job);
+  $('jobTitle').textContent = `任务 ${job.id.slice(0,8)} · ${stages[job.status] || job.status}`;
   $('stage').textContent = (stages[job.stage] || job.stage) + (job.message ? ` · ${job.message}` : '')
     + (job.cancel_requested && !terminal ? ' · 等待当前GPU安全边界取消，保留完成帧' : '')
     + (job.reset_requested ? ' · 下一帧将reset' : '');
@@ -99,11 +108,13 @@ function render(job) {
   $('metrics').textContent = [
     `所选：${job.selected_nr} · 外围：${job.selected_backend}`,
     `实际NR：${measured(native.actual_backend)} · NR selected：${measured(native.selected_backend)}`,
-    `实际neural尺寸（高×宽）：${measured(job.actual_neural_size)} · 新NR实际调用：${measured(job.new_nr_calls)}`,
+    `实际 neural 尺寸（高×宽）：${measured(job.actual_neural_size)} · 正式NR调用：${measured(native.inference_calls)} · 预热：${measured(native.warmup_calls)}`,
     `NR shapes：${measured(native.shapes)} · fallback调用：${measured(native.fallback_calls)}`,
-    `完整处理（不含排队，含本次加载/准备/写出）：${seconds(job.full_processing_seconds)}` + (!terminal ? ` · 已用 ${seconds(job.elapsed_seconds)}` : ''),
-    `管线报告秒数：${seconds(job.seconds)} · shape准备：${seconds(native.prepare_seconds)} · 编译：${seconds(native.compile_seconds)}`,
-    `最近帧输入→输出（含本帧写出，不含解码/排队）：${seconds(job.last_frame && job.last_frame.input_to_output_seconds)}`,
+    `首次 NR 加载/编译与预热：${seconds(job.setup && job.setup.seconds)} · shape：${measured(job.setup && job.setup.neural_hw)}`,
+    `正式处理总计：${seconds(job.seconds)} · 最近帧管线推理：${seconds(job.last_frame && job.last_frame.host_stage_seconds && job.last_frame.host_stage_seconds.pipeline_call)}`,
+    `完整任务（含Engine/准备/写出）：${seconds(job.full_processing_seconds)}` + (!terminal ? ` · 已用 ${seconds(job.elapsed_seconds)}` : ''),
+    `NR内部shape准备：${seconds(native.prepare_seconds)} · 编译计数：${seconds(native.compile_seconds)}`,
+    `最近帧输入→输出（含写出）：${seconds(job.last_frame && job.last_frame.input_to_output_seconds)}`,,
     `最近帧CPU分段（秒；调用含GPU等待）：${measured(job.last_frame && job.last_frame.host_stage_seconds)}`,
     `额外阶段时长（后端原字段）：${measured(job.stage_seconds)}`,
   ].join('\n');
@@ -129,8 +140,9 @@ async function poll() {
   busy = true;
   try {
     const status = await api('/api/status');
-    $('model').textContent = `Engine：${status.model_state} · ${status.device}`
-      + (status.load_seconds != null ? ` · 加载 ${seconds(status.load_seconds)}` : '') + (status.model_error ? ' · '+status.model_error : '');
+    const modelStates = {unloaded:'未加载', loading:'加载中', ready:'已就绪', error:'加载失败'};
+    $('model').textContent = `Engine ${modelStates[status.model_state] || status.model_state} · ${status.device}`
+      + (status.load_seconds != null ? ` · ${seconds(status.load_seconds)}` : '') + (status.model_error ? ' · '+status.model_error : '');
     $('jobs').replaceChildren();
     for (const job of [...status.jobs].reverse()) {
       const element = document.createElement('button'); element.className = 'job';

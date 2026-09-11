@@ -1,0 +1,25 @@
+{
+  "files": {
+    "device_kernel.cu": {
+      "sha256": "b614d20f470a961b8f47f87af9c4031ea60f001f643772a6e8f8c1f5220698ac",
+      "size": 98214
+    },
+    "host_kernel.cu": {
+      "sha256": "b614d20f470a961b8f47f87af9c4031ea60f001f643772a6e8f8c1f5220698ac",
+      "size": 98214
+    },
+    "kernel.cubin": {
+      "sha256": "4ffe2b3edb08fee06339e1dd54f30c418481825f0dc4667530035504eae9145b",
+      "size": 834256
+    },
+    "kernel.py": {
+      "sha256": "992fcd1d6a196f9989ead10c4e4f91176013142bf311750f89ff4ac08dcdb2f7",
+      "size": 1756
+    },
+    "params.pkl": {
+      "sha256": "3097a7f1dcb85bb93b519241cb562c758d5c4993993d9c7e4f45083e07d8a019",
+      "size": 1110
+    }
+  },
+  "version": 1
+}

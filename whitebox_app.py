@@ -134,7 +134,7 @@ class JobManager:
                 'manifest': manifest, 'output': folder / 'output',
                 'nr_backend': nr_backend, 'selected_nr': label, 'selected_backend': backend,
                 'engine_nr': engine_nr, 'actual_neural_size': None, 'new_nr_calls': None,
-                'stage_seconds': None, 'full_processing_seconds': None,
+                'setup': None, 'stage_seconds': None, 'full_processing_seconds': None,
             }
             self.items[jid] = job
             self.queue.put(jid)
@@ -186,6 +186,10 @@ class JobManager:
                                ('stage_timings', 'stage_seconds')):
             if data.get(source) is not None:
                 job[target] = copy.deepcopy(data[source])
+        if data.get('setup') is not None:
+            job['setup'] = copy.deepcopy(data['setup'])
+            if data['setup'].get('neural_hw') is not None:
+                job['actual_neural_size'] = copy.deepcopy(data['setup']['neural_hw'])
         if isinstance(data.get('nr'), dict):
             nr_state = copy.deepcopy(data['nr'])
             job['nr'] = nr_state
@@ -229,7 +233,7 @@ class JobManager:
                 def progress(event):
                     with self.lock:
                         j.update({k: copy.deepcopy(v) for k, v in event.items()
-                                  if k in ('stage', 'message', 'processed_frames', 'total_frames_estimate', 'last_frame', 'seconds')})
+                                  if k in ('stage', 'message', 'processed_frames', 'total_frames_estimate', 'last_frame', 'seconds', 'setup')})
                         self._metrics(j, event)
 
                 def before_frame(index):
@@ -247,7 +251,8 @@ class JobManager:
                         j['stage'] = 'preparing_pipeline'
                     proc, report, stats = self.engine.run(
                         j['manifest'], j['output'], backend=j['selected_backend'], quiet=True,
-                        cancel=j['cancel'].is_set, progress=progress, before_frame=before_frame)
+                        cancel=j['cancel'].is_set, progress=progress, before_frame=before_frame,
+                        prewarm_nr=True)
                     with self.lock:
                         self._apply_report(j, report)
                         j['backend_stats'] = copy.deepcopy(stats)

@@ -13,6 +13,7 @@ model/*.pth
 .toolchains/
 
 *.cubin
+!precompiled/tilelang/**/*.cubin
 *.ptx
 *.dll
 *.lib

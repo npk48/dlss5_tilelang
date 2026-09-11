@@ -44,10 +44,11 @@ NR 的计划（arena 布局、buffer 归属、每步 launch 几何与参数）�
 1. Python 3.11 venv，安装 `requirements.txt`（已验证 Torch 2.5.1+cu124 / torchvision 0.20.1 /
    TileLang 0.1.14 / CUDA 12.9 bindings）。
 2. `model/weights_ht_blob.bin`、`model/*.pth`：全部模型二进制统一放在根目录 `model/`，随工作树提供，不入 Git；hash 和来源见 `model/guide_models.json`。
-3. `.toolchains/cuda12.8/`：项目私有的 CUDA 12.8 NVRTC + CCCL + runtime。TileLang 的 FP8 内核
+3. `precompiled/tilelang/` 带有 TileLang 0.1.14 / win32-AMD64 / SM89、WebUI 510×549（NR 512×640）的一组紧凑缓存；默认启动会一次性 seed 到可写 `.cache/tilelang/`。其他尺寸仍会按需编译。
+4. `.toolchains/cuda12.8/`：项目私有的 CUDA 12.8 NVRTC + CCCL + runtime。TileLang 的 FP8 内核
    （E4M3 转换与 F16 累加）需要 NVRTC ≥ 12.8，由 `runtime.fp8_compiler.private_compile` 只在编译这些内核时
    挂载，系统环境不变。缺它则内核编译直接报错。同样不入 Git。
-4. GPU 需 SM89（RTX 40 系），且 NR 只在默认 CUDA stream 上验证。
+5. GPU 需 SM89（RTX 40 系），且 NR 只在默认 CUDA stream 上验证。
 
 ## 抽取边界
 

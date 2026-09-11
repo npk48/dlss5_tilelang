@@ -19,7 +19,7 @@ class Engine:
     def close(self):
         self.backend.close()
 
-    def run(self,manifest,output,*,backend='tilelang',quiet=False,cancel=None,progress=None,before_frame=None):
+    def run(self,manifest,output,*,backend='tilelang',quiet=False,cancel=None,progress=None,before_frame=None,prewarm_nr=False):
         from app.execution import run_manifest
         if backend not in ('torch','tilelang'):raise ValueError('Unknown backend')
         output=Path(output)
@@ -32,13 +32,15 @@ class Engine:
             if progress is not None:progress(event)
         with self.backend.activate(backend=='tilelang'):
             proc,report=run_manifest(manifest,output,model=self.model,quiet=quiet,cancel=cancel,progress=observed_progress,before_frame=before_frame,
-                                    compute_backend=before['backend'] if backend=='tilelang' else 'PyTorch')
+                                    compute_backend=before['backend'] if backend=='tilelang' else 'PyTorch',prewarm_nr=prewarm_nr)
         after=self.backend.report()
         nr_state=dict(after['nr'])
         nr_state['total_calls']=nr_state['calls']
         for key in ('calls','samples','failures','prepare_seconds','compile_seconds'):
             nr_state[key]=nr_state.get(key,0)-before['nr'].get(key,0)
         if not nr_state['calls']:nr_state['last_frame']=None
+        warmup_calls=(report.get('setup') or {}).get('nr_warmup_calls',0)
+        nr_state.update(warmup_calls=warmup_calls,inference_calls=max(0,nr_state['calls']-warmup_calls))
         counters={k:v-before['counters'].get(k,0) for k,v in after['counters'].items()}
         actual='torch' if backend=='torch' else self.backend.nr_backend if nr_state['calls'] else 'not-run'
         nr_state.update(selected_backend='torch' if backend=='torch' else self.backend.nr_backend,

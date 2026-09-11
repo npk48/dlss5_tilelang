@@ -52,7 +52,7 @@ def _color_input(path,device,encoding,alpha_mode):
         c=torch.where(alpha>0,c/denom,torch.zeros_like(c))
     return c,alpha
 
-def run_manifest(manifest,output,*,device='cuda',weights=None,model=None,cancel=None,progress=None,before_frame=None,quiet=False,compute_backend='PyTorch'):
+def run_manifest(manifest,output,*,device='cuda',weights=None,model=None,cancel=None,progress=None,before_frame=None,quiet=False,compute_backend='PyTorch',prewarm_nr=False):
     manifest=Path(manifest);output=Path(output);spec=json.loads(manifest.read_text(encoding='utf-8'))
     encoding=spec.get('color_encoding');mode=spec.get('mode','guided')
     if encoding not in ('linear','sRGB','linear709_nits','PQ2020'):raise ValueError('Explicit supported color_encoding required')
@@ -109,9 +109,26 @@ def run_manifest(manifest,output,*,device='cuda',weights=None,model=None,cancel=
         (output/'report.json').write_text(json.dumps({'status':'failed','stage':'loading_model','mode':mode,'frames':[],'error':str(exc)},indent=2),encoding='utf-8');raise
     engine=proc if mode=='guided' else proc.guided
     provenance=getattr(proc,'provenance',{'guide_source':'provided'})
-    root=manifest.parent;records=[];start=time.perf_counter()
+    root=manifest.parent;records=[];setup=None
     total=video_info['estimated_frames'] if video_info else len(spec['frames'])
-    emit({'stage':'processing','processed_frames':0,'total_frames_estimate':total})
+    if prewarm_nr and 'TileLang' in compute_backend:
+        emit({'stage':'preparing_nr','message':'加载预编译 kernels；未覆盖的新尺寸会编译','processed_frames':0,'total_frames_estimate':total})
+        try:
+            check_cancel(cancel);tick=time.perf_counter();nh,nw=engine.neural_size
+            engine.chain.model.infer_minimal(torch.zeros((1,16,nh,nw),device=device,dtype=torch.float32))
+            torch.cuda.synchronize(device);check_cancel(cancel)
+            setup={'seconds':time.perf_counter()-tick,'neural_hw':[nh,nw],'nr_warmup_calls':1,
+                   'scope':'TileLang NR kernel load/compile plus one stateless dummy execution; no frame/history consumed'}
+        except Exception as exc:
+            status='cancelled' if isinstance(exc,FrameCancelled) or (cancel and cancel()) else 'failed'
+            (output/'report.json').write_text(json.dumps({'status':status,'stage':'preparing_nr','mode':mode,'frames':[],'error':str(exc)},indent=2),encoding='utf-8')
+            raise
+        emit({'stage':'processing','message':'推理与输出','processed_frames':0,'total_frames_estimate':total,'setup':setup})
+    else:
+        first_stage='preparing_nr' if 'TileLang' in compute_backend else 'processing'
+        first_message=('加载预编译 kernels；未覆盖的新尺寸会在首帧编译' if first_stage=='preparing_nr' else '推理与输出')
+        emit({'stage':first_stage,'message':first_message,'processed_frames':0,'total_frames_estimate':total})
+    start=time.perf_counter()
     log=(output/'frames.jsonl').open('w',encoding='utf-8')
     try:
         for index,f in enumerate(source_frames):
@@ -176,9 +193,9 @@ def run_manifest(manifest,output,*,device='cuda',weights=None,model=None,cancel=
             processed=index+1
             log.write(json.dumps(record)+'\n');log.flush()
             if len(records)>100:del records[:-100]
-            emit({'stage':'processing','processed_frames':processed,'total_frames_estimate':total,'last_frame':record})
+            emit({'stage':'processing','message':'推理与输出','processed_frames':processed,'total_frames_estimate':total,'last_frame':record})
             report={'status':'running','frames':records,'processed_frames':processed,'frame_records':'frames.jsonl','seconds':time.perf_counter()-start,'source_manifest':str(manifest.resolve()),
-                    'all_image_compute':compute_backend+'; fixed NR; no native reference fallback','mode':mode,'guide_provenance':provenance,'video_source':video_info,
+                    'all_image_compute':compute_backend+'; fixed NR; no native reference fallback','mode':mode,'guide_provenance':provenance,'video_source':video_info,'setup':setup,
                     'video_output':{'file':video_path.name,'meaning':'silent opaque SDR preview, not HDR master'} if video_path else None}
             tmp=output/'report.tmp';tmp.write_text(json.dumps(report,indent=2),encoding='utf-8');tmp.replace(output/'report.json')
         if not processed:raise ValueError('No frames decoded')
@@ -189,12 +206,12 @@ def run_manifest(manifest,output,*,device='cuda',weights=None,model=None,cancel=
             try:writer.close(abort=True)
             finally:writer=None
         if video_path and video_path.exists():video_path.unlink()
-        (output/'report.json').write_text(json.dumps({'status':status,'frames':records,'processed_frames':processed,'frame_records':'frames.jsonl','error':str(exc)},indent=2),encoding='utf-8')
+        (output/'report.json').write_text(json.dumps({'status':status,'frames':records,'processed_frames':processed,'frame_records':'frames.jsonl','setup':setup,'error':str(exc)},indent=2),encoding='utf-8')
         emit({'stage':status,'processed_frames':processed,'error':str(exc)});raise
     finally:
         log.close()
         if reader:reader.close()
     report['status']='completed';report['seconds']=time.perf_counter()-start
     (output/'report.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
-    emit({'stage':'completed','processed_frames':processed,'seconds':report['seconds']})
+    emit({'stage':'completed','message':'处理完成','processed_frames':processed,'seconds':report['seconds']})
     return proc,report
