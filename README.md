@@ -1,7 +1,10 @@
 # DLSS5 白箱管线：纯 TileLang NR
 
-这是从 `dlss5_tilelang` 抽取整理后的**纯 TileLang DLSS5 管线**：整条 NR 图（每帧 193 个逻辑 Step）
-由 TileLang 实现执行，外围的 FSR / 光流 / 度量深度 / 时域 / NR-chain 阶段仍在冻结的 Torch 参考实现上加速。
+整条 NR 图（每帧 193 个逻辑 Step）由 TileLang 实现执行。外围的 FSR / 光流 / 度量深度 /
+时域 / NR-chain 阶段仍在冻结的 Torch 参考实现上加速。
+
+NR 的计划（arena 布局、buffer 归属、每步 launch 几何与参数）由 `tilelang_nr/plan/` 用纯 Python/Torch
+构建，不编译、不绑定任何 CUDA kernel。
 
 ## 入口
 
@@ -20,28 +23,30 @@
 
 | 层 | 位置 | 说明 |
 | --- | --- | --- |
-| NR 计算 | `tilelang_nr/` | `VitJointTileLangNR`（算法基准 797fd63）：utility / shallow / 2H-4H / 8H / 16H / ViT-物理桥，共 193 个逻辑 Step |
-| NR 计划 | `native_nr/` | 只提供 packet / layout 计划、launch 几何与 buffer 归属（`cuda/*.cu` 在 `_prepare` 时编译，仅用于取计划元数据，不执行任何原版数学 Step） |
+| NR 计算 | `tilelang_nr/*.py` | `VitJointTileLangNR`（算法基准 797fd63）：utility / shallow / 2H-4H / 8H / 16H / ViT-物理桥，共 193 个逻辑 Step |
+| NR 计划 | `tilelang_nr/plan/` | 纯 Python/Torch：arena 与 aux 布局、buffer 归属、每步几何与 typed 参数；无编译、无 CUDA kernel |
 | Host 管线 | `fsr_*.py`、`flow_pipeline.py`、`depth_attention.py`、`temporal_inputs.py`、`nr_chain_pipeline.py` | FSR reconstruct/locks、accumulate、depth-clip、RAFT-small 适配、DINO 概率发布、时域输入准备、NR-chain 输入/输出 |
 | 冻结参考 | `reference/` | 逐字节不变的模型、权重与 `whitebox_pipeline` 包 |
 | 调度 | `backend.py`、`run.py`、`execution.py` | 线程局部 dispatch：替换 NR 图 + 加速外围阶段 |
 
-`tilelang_nr/README.md` 给出从公开入口追到计算的文件导览；`native_nr/README.md` 说明计划层。
+`tilelang_nr/README.md` 给出从公开入口追到计算的文件导览。
 
 ## 运行准备
 
-1. Python 3.11 venv，安装 `reference/requirements-whitebox.txt` 与 `requirements-accelerated.txt`
-   （已验证 Torch 2.5.1+cu124 / torchvision 0.20.1 / TileLang 0.1.14 / CUDA 12.9 bindings）。
+1. Python 3.11 venv，安装 `requirements.txt`（已验证 Torch 2.5.1+cu124 / torchvision 0.20.1 /
+   TileLang 0.1.14 / CUDA 12.9 bindings）。
 2. `reference/weights_ht_blob.bin` 与 `reference/guide_models/*.pth`：冻结权重，随工作树提供，不入 Git。
-3. `.toolchains/cuda12.8/`：项目私有的 CUDA 12.8 NVRTC + CCCL + runtime，用来编译 `native_nr/cuda/*.cu`
-   计划模块。缺它则 `_prepare` 直接失败（`add_dll_directory` 找不到 `nvrtc/bin`）。同样不入 Git。
+3. `.toolchains/cuda12.8/`：项目私有的 CUDA 12.8 NVRTC + CCCL + runtime。TileLang 的 FP8 内核
+   （E4M3 转换与 F16 累加）需要 NVRTC ≥ 12.8，由 `fp8_toolchain.private_compile` 只在编译这些内核时
+   挂载，系统环境不变。缺它则内核编译直接报错。同样不入 Git。
 4. GPU 需 SM89（RTX 40 系），且 NR 只在默认 CUDA stream 上验证。
 
 ## 抽取边界
 
 本仓库只保留唯一最终管线：TileLang NR + 外围管线设施 + 冻结参考。相对源仓库已剔除：
 
-- 原版 CUDA NR 的分发产物与替代后端：`native_nr_dist/`（含 ZIP）、`cuda_native/`、`cuda` 默认后端；
+- 原版 CUDA NR 的全部实现与分发产物：`native_nr/`（含 `cuda/*.cu`）、`native_nr_dist/`（含 ZIP）、
+  `cuda_native/`、`cuda` 默认后端；NR 计划已改为纯 Python，不再需要 NVRTC 编译计划模块；
 - TileLang 的中间组织与未采纳候选：旧 `tilelang_nr/legacy/`、endpoint / serial / parallel split、
   wide_packet、旧 joint/UP8 及 `experiments/archive/`；
 - NR 侧被 TileLang 取代的 Torch 融合层（`mega_*`、`compact_one_*`、`cooperative_*`、`layout_*`、

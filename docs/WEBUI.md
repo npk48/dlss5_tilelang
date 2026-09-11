@@ -46,7 +46,7 @@ proc, report, stats = engine.run(
 - `progress`：stage、message、processed_frames、total_frames_estimate、last_frame、seconds。
 - `before_frame(index)`：有 reset 请求时返回 `{'reset': True, 'reset_reason': 'UI explicit reset'}`，消费后返回 None。
 - `report`：status、processed_frames、seconds、frames、video_output；可选 `stage_timings`。
-- `stats.native_nr`：`selected_backend`、`actual_backend`、`calls`、`fallback_calls`、
+- `stats.nr`：`selected_backend`、`actual_backend`、`calls`、`fallback_calls`、
   `shapes: [{height,width}]`、`prepare_seconds`、`compile_seconds`。`calls` 是本任务新 NR 的实际调用，
   不是 Engine 生命周期累计。
 - 实际 neural size 来自 `last_frame.neural_hw`。缺失的调用数、shape 准备、编译与 stage timing 显示“未测”，

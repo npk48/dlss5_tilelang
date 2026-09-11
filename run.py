@@ -34,20 +34,20 @@ class Engine:
             proc,report=run_manifest(manifest,output,model=self.model,quiet=quiet,cancel=cancel,progress=observed_progress,before_frame=before_frame,
                                     compute_backend=before['backend'] if backend=='tilelang' else 'PyTorch')
         after=self.backend.report()
-        native=dict(after['native_nr'])
+        native=dict(after['nr'])
         native['total_calls']=native['calls']
         for key in ('calls','samples','failures','prepare_seconds','compile_seconds'):
-            native[key]=native.get(key,0)-before['native_nr'].get(key,0)
+            native[key]=native.get(key,0)-before['nr'].get(key,0)
         if not native['calls']:native['last_frame']=None
         counters={k:v-before['counters'].get(k,0) for k,v in after['counters'].items()}
         actual='torch' if backend=='torch' else self.backend.nr_backend if native['calls'] else 'not-run'
         native.update(selected_backend='torch' if backend=='torch' else self.backend.nr_backend,
                       actual_backend=actual,shapes=[{'height':h,'width':w} for h,w in sorted(job_shapes)])
-        stats={**after,'counters':counters,'native_nr':native,'selected_backend':backend,'nr_backend':actual,
+        stats={**after,'counters':counters,'nr':native,'selected_backend':backend,'nr_backend':actual,
                'model_load_seconds':self.load_seconds,'model_loader':self.load_report,'run_seconds':report['seconds']}
         if backend=='torch':
             stats['backend']='PyTorch';stats['precision']='Frozen Torch reference; TileLang NR is inactive'
-        report.update(nr_backend=actual,native_nr=native)
+        report.update(nr_backend=actual,nr=native)
         (output/'report.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
         (output/'backend.json').write_text(json.dumps(stats,indent=2),encoding='utf-8')
         return proc,report,stats

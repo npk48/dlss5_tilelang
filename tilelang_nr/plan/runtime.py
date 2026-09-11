@@ -1,6 +1,6 @@
-from .device import Driver, U, I, checked, Weights
+from .storage import Storage, U, I, Weights
 from .layouts import Shape, align, dep, raw16, encoder_pixels, pointmap, halfmap, repack99, local_packets, packets
-from .source import prepare, OUTER_UNITS, DEEP_UNITS
+from .source import prepare, DEEP_UNITS
 
 # outer_runtime.py
 """Live native block0..22 / block48..70 packet executor.
@@ -32,33 +32,30 @@ class OuterRuntime:
         tick = time.perf_counter()
         self.shape = Shape(height, width)
         self.device = torch.device(device or next(model.buffers()).device)
-        self.driver = Driver(self.device)
+        self.storage = Storage(self.device)
         self.closed = False
         self.calls = 0
         self.encoder_steps, self.decoder_steps = [], []
         self.prepare_seconds = 0.0
         try:
-            self.weights = Weights(model, weights_path, self.driver)
+            self.weights = Weights(model, weights_path, self.storage)
             self._prepare(model)
-            self.prepare_seconds = time.perf_counter() - tick - self.driver.compile_seconds
+            self.prepare_seconds = time.perf_counter() - tick - self.storage.compile_seconds
         except BaseException:
             self.close()
             raise
 
     def _prepare(self, model):
-        shape, d, wt = self.shape, self.driver, self.weights
+        shape, d, wt = self.shape, self.storage, self.weights
         h, w = shape.height, shape.width
-        folder = Path(__file__).resolve().parents[1] / f'.cache/native_nr/shapes/{h}x{w}'
-        ds, up = prepare(shape, folder)
-        self.source_directory = str(folder)
+        ds, up = prepare(shape)
         defines = {'NR_H': h, 'NR_W': w}
-        modules = {}
+        units = {}
 
-        def module(unit):
-            unit = OUTER_UNITS[unit]
-            if unit not in modules:
-                modules[unit] = d.module(folder / unit, defines)
-            return modules[unit]
+        def logical_unit(name):
+            if name not in units:
+                units[name] = d.unit(name, defines)
+            return units[name]
 
         offsets, lengths, cursor = {}, {}, 0
 
@@ -94,7 +91,7 @@ class OuterRuntime:
         self.deep_output = self.arena[offsets['deep_out']:offsets['deep_out'] + lengths['deep_out']]
         self.head = d.tensor((1, h, w, 4), torch.float32)
         self.status = d.tensor(1, torch.int32)
-        util = module('utility.cu')
+        util = logical_unit('utility.cu')
         n = (cursor - counter_begin) // 4
         self.clear = d.step(util, 'clear_counters', ((n + 255) // 256, 1, 1), (256, 1, 1), 0,
                             [U(base + counter_begin),
@@ -109,7 +106,7 @@ class OuterRuntime:
             'UP133_projection': d.tensor(deep_h * deep_w * 256, torch.float16),
         }
         self.input_argument = U(0)
-        self.pre = d.step(module('shallow_static_geometry/one.cu'), 'block0_native_packet',
+        self.pre = d.step(logical_unit('shallow_static_geometry/one.cu'), 'block0_native_packet',
                           (w // 8, h // 8, 1), (32, 1, 1), 0, [
                               wt.one(0), self.input_argument,
                               U(wt.input_adapter(model)),
@@ -164,7 +161,7 @@ class OuterRuntime:
                         U(d.upload(gate[order])),
                         I(offsets['out4'])
                     ]
-                steps.append(d.step(module(unit), name, *geometry, 0, values))
+                steps.append(d.step(logical_unit(unit), name, *geometry, 0, values))
             else:
                 if b in (8, 14, 22):
                     pi, po = ds[heads]
@@ -180,7 +177,7 @@ class OuterRuntime:
                     ui_ptr = d.upload(ui)
                     if b == 62:
                         steps.append(
-                            d.step(module('wide_transition_packet/two.cu'), 'streamed_project2',
+                            d.step(logical_unit('wide_transition_packet/two.cu'), 'streamed_project2',
                                    ((len(ui) + 15) // 16, 1, 1), (32, 2, 1), 0, [
                                        U(base),
                                        U(cross.projection),
@@ -231,7 +228,7 @@ class OuterRuntime:
                         unit = 'eight_full_projection/eight.cu'
                         name = 'full8_inpview' if flags == 1 else 'full8_outview' if flags == 2 else 'full8_chained'
                     shared = heads * 2048
-                steps.append(d.step(module(unit), name, *geometry, shared, values))
+                steps.append(d.step(logical_unit(unit), name, *geometry, shared, values))
             previous = offsets[f'pool{b}'] if b in (4, 8, 14, 22) else out
             if b == 22:
                 ph, pw = p['pool_shape']
@@ -241,7 +238,7 @@ class OuterRuntime:
                            [U(base), I(previous), I(hh),
                             I(ww), I(ph), I(pw)]))
         mg, sg, readout = wt.post(model)
-        self.post = d.step(module('post_static_packet/post.cu'), 'post70_native_head',
+        self.post = d.step(logical_unit('post_static_packet/post.cu'), 'post70_native_head',
                            (w // 8 + 1, h // 8 + 1, 1), (32, 1, 1), 0, [
                                wt.one(70),
                                U(base + previous),
@@ -254,7 +251,7 @@ class OuterRuntime:
                            ])
 
     def encode(self, prepared_features):
-        self.driver.guard()
+        self.storage.guard()
         self.input_argument.value = prepared_features.data_ptr()
         self.clear()
         self.pre()
@@ -294,13 +291,13 @@ class OuterRuntime:
             'encoder_launches': len(self.encoder_steps) + 1,
             'decoder_launches': len(self.decoder_steps) + 1,
             'prepare_seconds': self.prepare_seconds,
-            'compile_seconds': self.driver.compile_seconds
+            'compile_seconds': self.storage.compile_seconds
         }
 
     def close(self):
         if self.closed:
             return
-        self.driver.close()
+        self.storage.close()
         self.closed = True
 
 
@@ -319,7 +316,6 @@ import struct
 import numpy as np
 import torch
 
-HERE = Path(__file__).resolve().parent / 'cuda'
 
 
 class CompletionRegion(C.Structure):
@@ -381,7 +377,7 @@ class DeepRuntime:
         self.aux = []
         self.stage_outputs = {}
         self._completion_refs = []
-        self.d = None
+        self.storage = None
         self.input_bytes = self.output_bytes = self.rows * 512
         self.runtime_sha256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
         self.defines = dict(DH=h,
@@ -395,21 +391,14 @@ class DeepRuntime:
         records = _weights(weights_path if weights_path is not None else model.weights_path)
         try:
             with torch.cuda.device(self.device):
-                self.d = Driver(self.device)
-                self.device = self.d.device
-                self.d.guard()
+                self.storage = Storage(self.device)
+                self.device = self.storage.device
+                self.storage.guard()
                 self.modules = {
-                    name: self.d.module(HERE / DEEP_UNITS[name], self.defines)
+                    name: self.storage.unit(DEEP_UNITS[name], self.defines)
                     for name in ('sixteen', 'local', 'matrix', 'qkv', 'attention', 'transition',
                                  'repack', 'split')
                 }
-                self.cubins = {}
-                for name, module in self.modules.items():
-                    key = next(k for k, v in self.d.modules.items() if v.value == module.value)
-                    path = HERE.parents[1] / '.cache/native_nr' / (key + '.cubin')
-                    self.cubins[name] = dict(cache_key=key,
-                                             sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
-                                             source=str(HERE / DEEP_UNITS[name]))
                 self.weight_ptrs = {}
                 for b in range(23, 48):
                     layers = range(5) if b in range(30, 39) else range(1) if b == 39 else range(4)
@@ -422,20 +411,17 @@ class DeepRuntime:
                                     (0x400010, 0x400800, 0x300080, 2, 0x100800)[layer])
                         if len(data) != expected:
                             raise ValueError(f'Unexpected frozen block{b}.layer{layer} weight size')
-                        self.weight_ptrs[b, layer] = self.d.upload(data)
-                self.output = self.d.tensor(self.output_bytes)
+                        self.weight_ptrs[b, layer] = self.storage.upload(data)
+                self.output = self.storage.tensor(self.output_bytes)
                 self.input_arg = U(0)
                 self._prepare()
-                self.aux_slab = self.d.tensor(sum(r['count'] for r in self.aux), torch.int32)
+                self.aux_slab = self.storage.tensor(sum(r['count'] for r in self.aux), torch.int32)
                 offset = 0
                 for completion, index, region in self._completion_refs:
                     region['pointer'] = self.aux_slab.data_ptr() + 4 * offset
                     region['offset'] = offset
                     completion.regions[index].pointer = region['pointer']
                     offset += region['count']
-                self.clear_counters = self.d.dll.cuMemsetD32Async
-                self.clear_counters.argtypes = [U, C.c_uint32, C.c_size_t, C.c_void_p]
-                self.clear_counters.restype = C.c_int
         except BaseException:
             self.close()
             raise
@@ -443,12 +429,12 @@ class DeepRuntime:
     def _buffer(self, count, dtype=torch.uint8):
         # Zero initialization is once-only for the padding beyond real M. All real
         # output/partial bytes are rewritten by their producer on every frame.
-        value = self.d.tensor(count, dtype)
+        value = self.storage.tensor(count, dtype)
         value.zero_()
         return value.data_ptr()
 
     def _map(self, array):
-        return self.d.upload(np.asarray(array, np.int32))
+        return self.storage.upload(np.asarray(array, np.int32))
 
     def _completion(self, count, split=False, split_value=3, first_only=False):
         result = Completion()
@@ -463,7 +449,7 @@ class DeepRuntime:
         return result
 
     def _add(self, seq, unit, name, grid, block, values):
-        self.steps.append(self.d.step(self.modules[unit], name, grid, block, 0, values))
+        self.steps.append(self.storage.step(self.modules[unit], name, grid, block, 0, values))
         self.launches.append(
             dict(sequence=seq, name=name, unit=unit, grid=list(grid), block=list(block)))
 
@@ -584,7 +570,7 @@ class DeepRuntime:
                         gate=0,
                         source_map=None):
             pkt, route = (0, 0) if source_map is None else tuple(
-                self.d.upload(x) for x in packets(source_map, rows, K))
+                self.storage.upload(x) for x in packets(source_map, rows, K))
             return [
                 U(source),
                 U(weight),
@@ -767,11 +753,9 @@ class DeepRuntime:
         if input_tensor.data_ptr() == self.output.data_ptr():
             raise ValueError('Deep input must not alias its owned output')
         with torch.cuda.device(self.device):
-            self.d.guard()
+            self.storage.guard()
             self.input_arg.value = input_tensor.data_ptr()
-            checked(
-                self.clear_counters(self.aux_slab.data_ptr(), 0xffffffff, self.aux_slab.numel(),
-                                    None))
+            self.aux_slab.fill_(-1)
             for step in self.steps:
                 step()
         self._last_input = input_tensor
@@ -796,19 +780,18 @@ class DeepRuntime:
             raw_split_publication=True,
             weight_source='frozen BIN',
             kernels=self.launches,
-            cubins=self.cubins,
             shape_defines=self.defines,
             counter_regions=len(self.aux),
             counter_clear_operations_per_frame=1,
-            counter_clear='single cuMemsetD32Async(-1), owned contiguous int32 slab, stream0',
+            counter_clear='single int32 fill(-1) over the owned contiguous completion slab, stream0',
             runtime_source_sha256=self.runtime_sha256,
             closed=self.closed)
 
     def close(self):
         if self.closed:
             return
-        if self.d is not None:
-            self.d.close()
+        if self.storage is not None:
+            self.storage.close()
         self.steps.clear()
         self.output = None
         self._last_input = None
@@ -816,12 +799,12 @@ class DeepRuntime:
 
 
 # runtime.py
-"""Complete native learned NR behind the frozen model's minimal packet boundary."""
+"""Cache lifecycle for the TileLang NR plan: one prepared shape per entry."""
 import time
 import torch
 
 
-class NativeNR:
+class PlanRuntime:
 
     def __init__(self, model, weights_path=None, max_cached_shapes=2):
         if max_cached_shapes < 1:
@@ -866,7 +849,7 @@ class NativeNR:
             ) or deep.output_bytes != outer.deep_output.numel():
                 raise ValueError('Native outer/deep byte boundary mismatch')
             self.entries[key] = outer, deep
-            compile_seconds = outer.driver.compile_seconds + deep.d.compile_seconds
+            compile_seconds = outer.storage.compile_seconds + deep.storage.compile_seconds
             self.compile_seconds += compile_seconds
             self.prepare_seconds += time.perf_counter() - tick - compile_seconds
             return self.entries[key]

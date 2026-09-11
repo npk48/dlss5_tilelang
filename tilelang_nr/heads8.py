@@ -810,7 +810,7 @@ def kernel8(
 def build_step(spec):
     if not supports(spec.name):
         raise NotImplementedError(spec.name)
-    from native_nr import layouts
+    from .plan import layouts
     height, width, gx, sx, sy, flags = (spec.scalar(2, k) for k in ('height', 'width', 'grid_x',
                                                                     'shift_x', 'shift_y', 'flags'))
     if tuple(spec.block) != (32, 8, 1) or spec.grid[1:] != (

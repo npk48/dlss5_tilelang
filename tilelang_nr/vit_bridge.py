@@ -795,7 +795,7 @@ def build_step(spec):
         return _finish(kernel, lambda: kernel(*args, stream=0))
     transition = name == 'matrix_phase'
     if transition and any(spec.scalar(i) for i in (2, 3, 4, 13, 17, 18, 19, 20, 23)):
-        raise NotImplementedError('transition optional ABI rails not used by native_nr runtime')
+        raise NotImplementedError('transition optional ABI rails not used by the NR plan')
     a = _view(spec, 0)
     w = _view(spec, 1)
     skip = _view(spec, 2) if spec.scalar(2) else a

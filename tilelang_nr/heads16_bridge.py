@@ -575,7 +575,7 @@ def _sixteen(sizes, H, W, variant, decoder, flags, tails):
     return main
 
 
-# These names are the exact native_nr deep launch ABI, not block-name guesses.
+# These names are the exact deep launch ABI, not block-name guesses.
 _BRIDGES = {
     'raw_repack_completion',
     'permute',
@@ -779,7 +779,7 @@ def build_step(spec, *, fuse_completion=True):
         return _finish(kernel, lambda: kernel(*args, stream=0))
     transition = name == 'matrix_phase'
     if transition and any(spec.scalar(i) for i in (2, 3, 4, 13, 17, 18, 19, 20, 23)):
-        raise NotImplementedError('transition optional ABI rails not used by native_nr runtime')
+        raise NotImplementedError('transition optional ABI rails not used by the NR plan')
     a = _view(spec, 0)
     w = _view(spec, 1)
     skip = _view(spec, 2) if spec.scalar(2) else a

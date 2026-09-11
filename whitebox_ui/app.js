@@ -89,7 +89,7 @@ $('outputList').ontoggle = () => { if ($('outputList').open) poll(); };
 $('prevFiles').onclick = () => { fileOffset = Math.max(0,fileOffset-100); poll(); };
 $('nextFiles').onclick = () => { fileOffset += 100; poll(); };
 function render(job) {
-  const terminal = ['completed','failed','cancelled'].includes(job.status), native = job.native_nr || {};
+  const terminal = ['completed','failed','cancelled'].includes(job.status), native = job.nr || {};
   $('jobTitle').textContent = `任务 ${job.id.slice(0,8)} · ${job.status}`;
   $('stage').textContent = (stages[job.stage] || job.stage) + (job.message ? ` · ${job.message}` : '')
     + (job.cancel_requested && !terminal ? ' · 等待当前GPU安全边界取消，保留完成帧' : '')

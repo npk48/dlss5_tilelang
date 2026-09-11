@@ -8,9 +8,10 @@
 
 | 活跃文件 | 负责的计算 |
 | --- | --- |
-| `runtime.py` | 计划复用、Step 替换、buffer view 生命周期、覆盖统计 |
+| `runtime.py` | Step 替换、buffer view 生命周期、覆盖统计 |
 | `registry.py` | 唯一的 `vit` 组织：按名字直接选定工厂 |
-| `spec.py` | `StepSpec` / `BufferViews` |
+| `spec.py` | `StepSpec` / `BufferViews`：把计划里的指针解析成非拷贝 Torch 视图 |
+| `plan/` | 纯 Python 计划：arena 布局、aux 轨道、buffer 归属、每步几何与 typed 参数 |
 | `shallow_endpoints.py` | 1H 浅层、block0 输入/池化、post70 输出；10 个逻辑 Step |
 | `heads24.py` | 2H/4H FFN、attention、projection、DS/UP；21 个逻辑 Step |
 | `heads8.py`、`heads8_layout.py` | 8H 五种角色、DS 行归属和 portrait UP 的物理投影；16 个逻辑 Step |
@@ -24,12 +25,15 @@
 Half 分片，不能当作普通行主序中间 tensor。共享 helper 不合并"看起来相似"但归约次序、
 `serial/unroll`、字节路由或舍入边界不同的实现。
 
-## 计划来源
+## 计划与执行
 
-`runtime._prepare` 调用 `native_nr` 的 `NativeNR._prepare` 取得 packet / layout 计划、
-launch 几何与 buffer 归属，然后把其中**每一个逻辑 Step 的 function 换成 TileLang 工厂产物**
-（`PortedStep`）。`native_nr/cuda/*.cu` 在此时被编译，只用于取计划元数据；执行期不会有任何原版数学 Step
-被调用，也没有任何回退路径——工厂缺失或编译/数值失败都直接抛错。
+`plan/runtime.py` 构建整条 NR 的计划：arena 与全部 skip/aux/weight buffer 的分配、
+每步的 launch 几何和 typed 参数。它**不编译也不绑定任何 CUDA kernel**，只产出
+`PlanStep(name, geometry, values)` 与 `Storage` 里的实际 buffer。
+
+`runtime._prepare` 逐条取出这些 Step，把其中**每一个逻辑 Step 的 function 换成 TileLang 工厂产物**
+（`PortedStep`）；`spec.tensor(i)` 再用 `BufferViews` 把参数里的指针解析成真实的 Torch 视图。
+执行期没有任何原版数学 Step，也没有回退路径——工厂缺失或编译/数值失败都直接抛错。
 
 ## 覆盖
 

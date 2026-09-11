@@ -186,9 +186,9 @@ class JobManager:
                                ('stage_timings', 'stage_seconds')):
             if data.get(source) is not None:
                 job[target] = copy.deepcopy(data[source])
-        if isinstance(data.get('native_nr'), dict):
-            native = copy.deepcopy(data['native_nr'])
-            job['native_nr'] = native
+        if isinstance(data.get('nr'), dict):
+            native = copy.deepcopy(data['nr'])
+            job['nr'] = native
             if native.get('calls') is not None:
                 job['new_nr_calls'] = native['calls']
 

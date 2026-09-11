@@ -21,7 +21,7 @@ class Backend:
     def __init__(self,module,model,*,nr_backend='tilelang-vit'):
         if getattr(module,'_tilelang_dispatch_installed',False):raise RuntimeError('Reuse the existing Engine/Backend; this prototype owns one frozen model per process')
         if nr_backend!='tilelang-vit':raise ValueError('Unknown NR backend')
-        self.nr_backend=nr_backend;self.native_nr=None
+        self.nr_backend=nr_backend;self.nr=None
         module._tilelang_dispatch_installed=True
         self.fsr_depth_clip_enabled=True;self.fsr_accumulate_enabled=True;self.fsr_frontend_enabled=True;self.nr_chain_enabled=True;self.flow_implementation_enabled=True;self.depth_attention_enabled=True;self.temporal_inputs_enabled=True
         self.module=module;self.model=model;self.stats=Counter()
@@ -33,11 +33,11 @@ class Backend:
             if current is not self:raise RuntimeError('NR inference entered a different model backend')
             if torch.cuda.current_stream(self.device).cuda_stream!=torch.cuda.default_stream(self.device).cuda_stream:
                 raise RuntimeError('This TileLang NR backend is qualified only on the default CUDA stream; nondefault-stream/Graph execution is not qualified')
-            if current.native_nr is None:
+            if current.nr is None:
                 from tilelang_nr.runtime import VitJointTileLangNR
-                current.native_nr=VitJointTileLangNR(current.model)
-            result=current.native_nr.infer_minimal(*args,**kwargs)
-            current.stats['native_nr_calls']+=1
+                current.nr=VitJointTileLangNR(current.model)
+            result=current.nr.infer_minimal(*args,**kwargs)
+            current.stats['nr_calls']+=1
             current.stats['tilelang_vit_nr_calls']+=1
             return result
         model.infer_minimal=checked_infer
@@ -131,8 +131,8 @@ class Backend:
         finally:_active.reset(token)
 
     def close(self):
-        if self.native_nr is not None:
-            self.native_nr.close();self.native_nr=None
+        if self.nr is not None:
+            self.nr.close();self.nr=None
 
     def report(self):
         report={'backend':'TileLang SM89 NVRTC + frozen Torch graph','counters':dict(self.stats),
@@ -152,11 +152,11 @@ class Backend:
                 'fsr_depth_clip_scope':'Complete depth clip/reactivity, original norm/bilinear prelude, F32 operation order, RTZ/UNORM stores; no FSR state/quality change.',
                 'qualified_stream':'default CUDA stream only; nondefault stream/Graph diagnostics did not qualify'}
         report['nr_backend']=self.nr_backend
-        report['native_nr']=self.native_nr.report() if self.native_nr is not None else {'calls':0,'samples':0,'failures':0,'fallback_calls':0,'cached_shapes':0,'prepare_seconds':0.,'compile_seconds':0.,'last_frame':None,'trace_supported':False}
-        native=report['native_nr']
+        report['nr']=self.nr.report() if self.nr is not None else {'calls':0,'samples':0,'failures':0,'fallback_calls':0,'cached_shapes':0,'prepare_seconds':0.,'compile_seconds':0.,'last_frame':None,'trace_supported':False}
+        native=report['nr']
         native['selected_backend']='tilelang-vit'
         native['actual_backend']='tilelang-vit' if native['calls'] else 'not-run'
         if native.get('last_frame') is not None:
             native['last_frame']={**native['last_frame'],'nr_backend':'tilelang-vit'}
-        report.update(backend='TileLang host pipeline + VitJoint TileLang NR (797fd63)',precision='TileLang computation on the native packet/layout plan; E4M3/F16 K32 initial-C arithmetic with original raw/aux/counter publication',runtime_lossless_half_guard=False,native_packet_half_cast=True,coverage='Complete 71-layer TileLang plan with ViT/Eight/Shallow/wide organizations; see actual dispatch counters',nr_baseline='native_nr plan metadata',nr_implementation='tilelang_nr.runtime.VitJointTileLangNR',nr_qualification_base='797fd63')
+        report.update(backend='TileLang host pipeline + VitJoint TileLang NR (797fd63)',precision='TileLang computation on the native packet/layout plan; E4M3/F16 K32 initial-C arithmetic with original raw/aux/counter publication',runtime_lossless_half_guard=False,native_packet_half_cast=True,coverage='Complete 71-layer TileLang plan with ViT/Eight/Shallow/wide organizations; see actual dispatch counters',nr_baseline='nr plan metadata',nr_implementation='tilelang_nr.runtime.VitJointTileLangNR',nr_qualification_base='797fd63')
         return report
