@@ -1,65 +1,235 @@
-# DLSS5 白箱管线：纯 TileLang NR
+# DLSS5 白箱管线 · TileLang NR
 
-整条 NR 图（每帧 193 个逻辑 Step）由 TileLang 实现执行。外围的 FSR / 光流 / 度量深度 /
-时域 / NR-chain 阶段仍在冻结的 Torch 参考实现上加速。
+这是一个面向研究与本地验证的完整图像/视频处理管线。默认执行路径以 **TileLang** 实现冻结的 71 层 NR 网络，并保留 Torch 与可读 CUDA 实现作为数值参考。
 
-NR 的计划（arena 布局、buffer 归属、每步 launch 几何与参数）由 `tilelang_nr/plan/` 用纯 Python/Torch
-构建，不编译、不绑定任何 CUDA kernel。
+项目不调用 NGX，也不是游戏注入插件。它接收显式 guide，或从 RGB 估计 depth / optical flow，再经过 NR chain 与 FSR 时域重建输出图像序列。
 
-## 入口
+## 三条执行路径
+
+| 路径 | 用途 | 入口 |
+| --- | --- | --- |
+| **TileLang（默认）** | 完整白箱管线；71 层 NR 共 193 个逻辑 Step 由 TileLang 执行 | `run.py --backend tilelang` / WebUI |
+| **Torch reference** | 同一完整管线的冻结 Torch 数值参考 | `run.py --backend torch` / WebUI |
+| **CUDA NR reference** | 独立验证 NR prepared packet；不包含 depth、flow、FSR 或视频调度 | `reference/cuda_nr/run_packet.py` |
+
+“纯 TileLang NR”指默认产品路径不依赖 CUDA reference 执行。`reference/cuda_nr/` 只作为独立实现参考和逐位对照保留，不会被默认 backend 静默调用。
+
+## 项目结构
 
 ```text
-# CLI：manifest 进，帧序列出
-.venv/Scripts/python.exe run.py --manifest <manifest.json> --output <新目录>
-
-# WebUI
-.venv/Scripts/python.exe whitebox_app.py
-
-# 独立 CUDA NR reference：prepared packet / 确定性 demo
-.venv/Scripts/python.exe reference/cuda_nr/run_packet.py --demo-size 320 384 --output <head.npy>
+dlss5_remake/
+├── run.py                         # manifest CLI；创建 Engine 并选择 TileLang/Torch
+├── whitebox_app.py                # 本地 WebUI 服务、任务队列和状态 API
+├── app/
+│   ├── backend.py                 # scoped backend dispatch；只在激活区间替换计算路径
+│   └── execution.py               # manifest、帧循环、输入输出与进度事件
+├── pipeline/
+│   ├── guides/
+│   │   ├── depth.py               # DINO/VDA depth attention 加速
+│   │   ├── flow.py                # RAFT-small correlation/index 路径
+│   │   └── temporal.py            # 32 帧时域输入与 packed K/V
+│   ├── fsr/                       # reconstruct、locks、depth clip、history、accumulate
+│   └── nr_chain.py                # prepared packet、历史与 NR 输出混合
+├── tilelang_nr/
+│   ├── runtime.py                 # TileLang NR runtime、shape cache 与执行报告
+│   ├── plan/                      # arena、布局、权重和 193 Step 的纯 Python 计划
+│   ├── kernels/                   # utility / shallow / 2H-4H / 8H / 16H / ViT bridge
+│   ├── common/                    # 各 kernel family 共用的 TileLang 构件
+│   └── instructions/              # FP8/MMA/布局相关设备端 primitives
+├── runtime/
+│   ├── bootstrap.py               # reference/model 路径与预编译 cache seed
+│   ├── model_loader.py            # 冻结 BIN 的向量化加载器
+│   ├── fp8_compiler.py            # 为 FP8 kernel 挂载私有 CUDA 12.8 工具链
+│   └── device.py                  # SM89 target 与 TileLang 配置
+├── reference/
+│   ├── dlss5_model.py             # 冻结模型定义、BIN 解码与 packet 语义
+│   ├── whitebox_pipeline/         # Torch 参考管线及第三方许可/来源
+│   └── cuda_nr/                   # 可读 CUDA 71 层 NR reference、API 与 packet CLI
+├── model/
+│   ├── weights_ht_blob.bin        # NR 权重（Git LFS）
+│   ├── raft_small_*.pth           # RAFT-small checkpoint（Git LFS）
+│   ├── metric_video_*.pth         # Metric Video Depth Anything Small（Git LFS）
+│   ├── guide_models.json          # guide checkpoint hash、来源和固定版本
+│   └── WEIGHT_RIGHTS.md           # 权重与再分发边界
+├── precompiled/tilelang/          # 有明确平台/shape 边界的 tracked cache seed
+├── webui/                         # 精简的浏览器前端
+├── docs/WEBUI.md                  # WebUI、Engine 和 HTTP API 说明
+└── requirements.txt
 ```
 
-`run.py` 的 `--backend tilelang`（默认）走完整白箱管线并调用 TileLang NR；
-`--backend torch` 用冻结的 Torch 参考跑同一条管线，用作数值对照。
+更细的 NR 文件到 Step 映射见 [`tilelang_nr/README.md`](tilelang_nr/README.md)。CUDA reference 的边界和调用方式见 [`reference/cuda_nr/README.md`](reference/cuda_nr/README.md)。
 
-## 计算组织
+## 环境要求
 
-| 层 | 位置 | 说明 |
-| --- | --- | --- |
-| NR 计算 | `tilelang_nr/kernels/` | `VitJointTileLangNR`（算法基准 797fd63）：utility / shallow / 2H-4H / 8H / 16H / ViT-物理桥，共 193 个逻辑 Step |
-| NR 计划 | `tilelang_nr/plan/` | 纯 Python/Torch：arena 与 aux 布局、buffer 归属、每步几何与 typed 参数；无编译、无 CUDA kernel |
-| FSR | `pipeline/fsr/` | reconstruct/locks、depth-clip、history sample、accumulate |
-| Guides | `pipeline/guides/` | RAFT-small 光流、DINO 度量深度、时域输入 |
-| NR chain | `pipeline/nr_chain.py` | NR 输入、历史与输出混合 |
-| 应用调度 | `app/` | scoped backend dispatch 与 manifest 执行 |
-| 运行设施 | `runtime/` | reference bootstrap、设备策略、模型加载、FP8 编译器 |
-| 冻结参考 | `reference/` | 冻结模型定义、`whitebox_pipeline` 与独立 `cuda_nr` CUDA 实现参考 |
-| 模型资产 | `model/` | NR BIN、RAFT/VDA checkpoints、hash manifest 与权利说明 |
-| WebUI | `whitebox_app.py`、`webui/` | 唯一服务入口与静态前端 |
+当前验证环境：
 
-`tilelang_nr/README.md` 给出从公开入口追到计算的文件导览。
+- Windows x64
+- Python 3.11
+- NVIDIA SM89（RTX 40 系）
+- Torch `2.5.1+cu124`
+- torchvision `0.20.1+cu124`
+- TileLang `0.1.14`
+- CUDA Python bindings
+- 默认 CUDA stream
 
-## 运行准备
+安装 Python 依赖：
 
-1. Python 3.11 venv，安装 `requirements.txt`（已验证 Torch 2.5.1+cu124 / torchvision 0.20.1 /
-   TileLang 0.1.14 / CUDA 12.9 bindings）。
-2. `model/weights_ht_blob.bin`、`model/*.pth`：全部模型二进制统一放在根目录 `model/`，随工作树提供，不入 Git；hash 和来源见 `model/guide_models.json`。
-3. `precompiled/tilelang/` 带有 TileLang 0.1.14 / win32-AMD64 / SM89、WebUI 510×549（NR 512×640）的一组紧凑缓存；默认启动会一次性 seed 到可写 `.cache/tilelang/`。其他尺寸仍会按需编译。
-4. `.toolchains/cuda12.8/`：项目私有的 CUDA 12.8 NVRTC + CCCL + runtime。TileLang 的 FP8 内核
-   （E4M3 转换与 F16 累加）需要 NVRTC ≥ 12.8，由 `runtime.fp8_compiler.private_compile` 只在编译这些内核时
-   挂载，系统环境不变。缺它则内核编译直接报错。同样不入 Git。
-5. GPU 需 SM89（RTX 40 系），且 NR 只在默认 CUDA stream 上验证。
+```powershell
+cd C:\work\dlss5_remake
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
 
-## 抽取边界
+如需视频输入或 MP4 预览，还需要本机可用的 `ffmpeg` 与 `ffprobe`。
 
-本仓库只保留唯一最终管线：TileLang NR + 外围管线设施 + 冻结参考。相对源仓库已剔除：
+## 模型文件与 Git LFS
 
-- 原版 CUDA NR 的旧生产接线、重复 support/WebUI/权重副本与分发缓存；整理后的唯一 CUDA 源码参考位于
-  `reference/cuda_nr/`，复用 `reference/dlss5_model.py`、`runtime/model_loader.py` 和根 `model/`，不参与纯 TileLang 默认路径；
-- TileLang 的中间组织与未采纳候选：旧 `tilelang_nr/legacy/`、endpoint / serial / parallel split、
-  wide_packet、旧 joint/UP8 及 `experiments/archive/`；
-- NR 侧被 TileLang 取代的 Torch 融合层（`mega_*`、`compact_one_*`、`cooperative_*`、`layout_*`、
-  `fp8_one/encoder`、`decoder2h`、`four/eight/one_head` 等）——运行证据显示它们在 tilelang-vit 路径下
-  一次也不会被调用；
-- 全部诊断与证据脚手架：`check_*` / `benchmark_*` / `analyze_*` / `profile_*` / `diagnose_*`、
-  `analysis/`、`evidence/`、`outputs/`、`experiments/`、`gpu_experiments/`、`tools/`。
+模型二进制统一位于 `./model`，并由 Git LFS 跟踪：
+
+```text
+model/weights_ht_blob.bin                         147,695,410 bytes
+model/metric_video_depth_anything_vits.pth       116,444,063 bytes
+model/raft_small_C_T_V2-01064c6d.pth               4,006,189 bytes
+```
+
+克隆后执行：
+
+```powershell
+git lfs install
+git lfs pull
+```
+
+运行时不会联网下载模型。Guide checkpoint 的 SHA256、来源 URL 和固定 revision 位于 `model/guide_models.json`；权重使用与再分发边界见 `model/WEIGHT_RIGHTS.md`。
+
+## CUDA 12.8 私有工具链
+
+仓库不跟踪 `.toolchains/`。TileLang FP8 kernel 与 CUDA NR reference 的首次编译需要：
+
+```text
+.toolchains/cuda12.8/
+├── nvrtc/bin/nvrtc64_120_0.dll
+├── nvrtc/bin/nvrtc-builtins64_128.dll
+├── runtime/include/
+└── cccl/include/
+```
+
+默认位置就是上述目录。也可以显式设置：
+
+```powershell
+$env:DLSS5_FP8_TOOLCHAIN = "C:\path\to\cuda12.8"
+$env:NATIVE_NR_TOOLCHAIN = "C:\path\to\cuda12.8"   # 仅 CUDA reference
+```
+
+缺少工具链时，已经命中预编译 cache 的 shape 仍可运行；出现新 shape、cache miss 或源码变化时会明确编译失败，不会退回其他 NR backend。
+
+## WebUI
+
+启动：
+
+```powershell
+.venv\Scripts\python.exe whitebox_app.py
+```
+
+打开 <http://127.0.0.1:7861>。服务只监听 loopback，不应反向代理到外网。
+
+首页只保留计算路线、输入类型、文件和输出尺寸；编码、NR work size、pass、FOV 与 manifest 位于“高级设置”。任务状态分成两个真实阶段：
+
+1. **加载模型与 kernels**：按实际 `neural_size` 加载/编译并执行一次无状态 NR 预热；
+2. **推理与输出**：正式处理图片/序列/视频。
+
+预热不会消费 NRChain、FSR、depth 或 flow 历史。页面分别显示 setup 时间、正式 NR 调用数和逐帧耗时。完整行为与 HTTP API 见 [`docs/WEBUI.md`](docs/WEBUI.md)。
+
+## CLI
+
+### RGB-estimated 模式
+
+最小 manifest：
+
+```json
+{
+  "mode": "rgb_estimated",
+  "color_encoding": "sRGB",
+  "output_size": [540, 960],
+  "frames": [
+    {"color": "frame000.png", "reset": true},
+    {"color": "frame001.png"}
+  ]
+}
+```
+
+`output_size`、`nr_work_size` 和所有 shape 均使用 `[height, width]`。输入路径相对于 manifest 所在目录。
+
+运行 TileLang：
+
+```powershell
+.venv\Scripts\python.exe run.py `
+  --backend tilelang `
+  --manifest C:\path\to\manifest.json `
+  --output C:\path\to\empty-output
+```
+
+运行 Torch reference：
+
+```powershell
+.venv\Scripts\python.exe run.py `
+  --backend torch `
+  --manifest C:\path\to\manifest.json `
+  --output C:\path\to\empty-output
+```
+
+输出目录必须为空。每帧会写 PNG 预览；HDR、linear 或 `save_float` 会另写 NPY。目录中还包含：
+
+- `run-manifest.json`：实际运行配置；
+- `frames.jsonl`：逐帧尺寸、guide、backend 和耗时；
+- `report.json`：任务结果；
+- `backend.json`：模型加载、实际 NR backend、调用和 shape 统计。
+
+### Guided 模式
+
+Guided manifest 必须显式提供 depth、motion 和 `motion_convention: "current_to_previous_pixels"`。Motion 单位是 source pixels；管线不会猜测或自动翻转方向。
+
+## 独立 CUDA NR reference
+
+CUDA reference 接收已经构造好的 Float32 CUDA `B×16×H×W` prepared packet，返回独立拥有的 Float32 `B×H×W×4` head；它不执行完整应用管线。
+
+确定性 demo：
+
+```powershell
+.venv\Scripts\python.exe reference\cuda_nr\run_packet.py `
+  --demo-size 320 384 `
+  --output outputs\cuda-reference-head.npy
+```
+
+现有 packet：
+
+```powershell
+.venv\Scripts\python.exe reference\cuda_nr\run_packet.py `
+  --input packet.npy `
+  --output head.npy
+```
+
+CUDA reference 与 TileLang NR 已在同一 320×384 packet 上验证逐位一致。
+
+## TileLang 预编译缓存
+
+`precompiled/tilelang/` 不是通用二进制发行版，也不是旧开发仓库的完整 cache。当前 bundle 只明确覆盖：
+
+- TileLang `0.1.14`
+- `win32-AMD64`
+- CUDA target `sm_89`
+- WebUI output `510×549`
+- NR neural shape `512×640`
+- RGB-estimated、1 个 NR pass
+
+默认启动会把 tracked bundle 一次性复制到可写、Git 忽略的 `.cache/tilelang/`。显式设置 `TILELANG_CACHE_DIR` 时不会自动 seed。其他输出尺寸、NR work size、版本、平台或源码变化仍可能首次编译。
+
+Bundle 的 ID、文件数和体积见 `precompiled/tilelang/bundle.json`。它保留 `host_kernel.cu` 与 `device_kernel.cu`，因为 TileLang 0.1.14 从磁盘重建 `JITKernel` 时会校验并读取这些文件。
+
+## 已验证事实与边界
+
+- 默认 TileLang NR：完整 71 层、193 个逻辑 Step；不存在 CUDA NR 静默 fallback。
+- CUDA reference、原 CUDA distribution 与 TileLang NR 在确定性 320×384 packet 上逐位一致。
+- RGB-estimated 路径使用 RAFT-small 与 Metric Video Depth Anything Small；估计 guide 不是真实游戏 depth/motion。
+- 当前仓库只验证 SM89 与默认 CUDA stream；其他 GPU 架构和 graph/non-default stream 不自动兼容。
+- 预编译 cache 只对其 manifest 声明的环境与 shape 作保证；工具链仍是新 shape 的必要依赖。
+- 本仓库不会因代码重构自动获得模型权重、训练数据或第三方组件的新许可。

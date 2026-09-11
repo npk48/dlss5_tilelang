@@ -8,4 +8,4 @@ All runtime model binaries live in this directory:
 
 `guide_models.json` pins filenames, sizes, hashes, upstream revisions, and URLs for the guide checkpoints. `WEIGHT_RIGHTS.md` records redistribution boundaries.
 
-The binary files are intentionally ignored by Git and must be supplied with a local checkout or distribution. Runtime code never downloads them during inference.
+The binary files are tracked through Git LFS. Run `git lfs pull` after cloning. Runtime code never downloads model files during inference.

@@ -1,0 +1,2 @@
+model/*.bin filter=lfs diff=lfs merge=lfs -text
+model/*.pth filter=lfs diff=lfs merge=lfs -text
