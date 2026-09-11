@@ -4,6 +4,7 @@ Adapted forward structure: AnimateDiff/ByteDance temporal attention, Apache-2.0
 """
 from runtime import bootstrap
 import torch,tilelang
+import torch.nn.functional as F
 import tilelang.language as T
 from einops import rearrange
 from runtime.device import TARGET,CONFIG,EXECUTION_BACKEND
@@ -48,7 +49,9 @@ def forward(module,hidden_states,encoder_hidden_states=None,attention_mask=None,
  cache=raw if cached_hidden_states is None else cached_hidden_states
  qin,kvin=prepare_kernel(n,count,channels,cached_hidden_states is None)(raw.contiguous(),cache.contiguous(),pe.contiguous())
  module._temporal_prepared_calls=getattr(module,'_temporal_prepared_calls',0)+1
- query=module.to_q(qin);key=module.to_k(kvin);value=module.to_v(kvin)
+ query=module.to_q(qin)
+ kv=F.linear(kvin,module._tilelang_kv_weight,module._tilelang_kv_bias)
+ key,value=kv.split((module.to_k.out_features,module.to_v.out_features),dim=-1)
  query=module.reshape_heads_to_batch_dim(query);key=module.reshape_heads_to_batch_dim(key);value=module.reshape_heads_to_batch_dim(value)
  result=module._attention(query,key,value,attention_mask)
  result=module.to_out[1](module.to_out[0](result))
@@ -61,6 +64,8 @@ class Temporal:
   for motion in estimator.network.head.motion_modules:
    for block in motion.temporal_transformer.transformer_blocks:
     for module in block.attention_blocks:
+     module._tilelang_kv_weight=torch.cat((module.to_k.weight,module.to_v.weight),dim=0).contiguous()
+     module._tilelang_kv_bias=None if module.to_k.bias is None else torch.cat((module.to_k.bias,module.to_v.bias),dim=0).contiguous()
      self.modules.append(module);original=module.forward
      def dispatch(*args,_module=module,_original=original,**kwargs):
       if self.enabled:return forward(_module,*args,**kwargs)
