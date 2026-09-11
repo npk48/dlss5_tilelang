@@ -145,7 +145,7 @@ class Backend:
                 'temporal_inputs_enabled':self.temporal_inputs_enabled,
                 'temporal_inputs_scope':'F32 cache/current concatenation and APE addition to exact Half inputs; K/V projections share one packed GEMM, while Q, attention and raw 32-frame cache semantics are unchanged.',
                 'depth_attention_scope':'DINO self-attention uses fused PyTorch SDPA with the original QKV/scale/projection; numerically close rather than bit-exact. Temporal DPT/cache semantics are unchanged.',
-                'flow_implementation_scope':'Full RAFT-small adapter; unchanged encoder/correlation/GRU/all updates, fused correlation grids/layout and final-only consumed upsample.',
+                'flow_implementation_scope':'Full RAFT-small adapter with fused correlation grids/layout and final-only consumed upsample; application default is 8 recurrent updates, manifest may request 12.',
                 'nr_chain_scope':'Complete single-frame RGB chain; fused preparation/packet/output and reused original texture sampling. Original Gaussian, model, validation, pass history and resampling.',
                 'fsr_frontend_scope':'Complete reconstruct and locks, original norm/luma boundaries, ordered selection, first-use initialization and atomic depth/lock publication.',
                 'fsr_accumulate_scope':'Complete accumulate/upsample/history stencil; original weight and bilinear boundaries, F32/RTZ/UNORM, state and diagnostics preserved.',

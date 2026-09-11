@@ -100,6 +100,9 @@ def run_manifest(manifest,output,*,device='cuda',weights=None,model=None,cancel=
         else:
             from whitebox_pipeline.rgb_pipeline import RGBSequencePipeline
             options=dict(spec.get('estimator_settings',{}))
+            # Eight recurrent refinements retain the stable motion field while
+            # avoiding the low-return tail of the original 12-update preset.
+            options.setdefault('flow_updates',8)
             if 'model_dir' in options:options['model_dir']=manifest.parent/options['model_dir']
             proc=RGBSequencePipeline(spec['output_size'],render_size=spec.get('render_size'),guide_config=GuideConfig(**spec.get('guide_settings',{})),**common,**options,**spec.get('fsr_settings',{}))
     except Exception as exc:
