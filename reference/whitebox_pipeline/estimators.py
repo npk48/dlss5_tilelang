@@ -12,11 +12,11 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
-ROOT=Path(__file__).resolve().parents[1]
+ROOT=Path(__file__).resolve().parents[2]
 
 def checked_models(directory=None):
-    root=Path(directory) if directory else ROOT/'guide_models'
-    manifest=json.loads((root/'manifest.json').read_text(encoding='utf-8'))
+    root=Path(directory) if directory else ROOT/'model'
+    manifest=json.loads((root/'guide_models.json').read_text(encoding='utf-8'))
     result={}
     for info in manifest['models']:
         file=root/info['file']

@@ -1,6 +1,6 @@
 """Scoped TileLang dispatch for the frozen DLSS5 pipeline.
 
-The frozen reference snapshot is byte-identical and never modified on disk.
+The frozen model equations remain unchanged; only repository-local asset paths are rewired.
 Dispatch replaces the frozen NR graph with the TileLang VitJoint implementation
 and accelerates the surrounding FSR / optical-flow / metric-depth / temporal /
 NR-chain stages. It is explicit and thread-local; the old project is never

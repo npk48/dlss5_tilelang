@@ -18,7 +18,7 @@ from urllib.parse import urlsplit
 from flask import Flask, jsonify, request, send_file
 
 ROOT = Path(__file__).resolve().parent
-REFERENCE = ROOT / 'reference'
+MODEL = ROOT / 'model'
 TERMINAL = {'completed', 'failed', 'cancelled'}
 SELECTIONS = {
     'tilelang-vit': ('tilelang', 'tilelang-vit', 'TileLang NR（VitJoint 797fd63）'),
@@ -57,7 +57,7 @@ class JobManager:
     def __init__(self, workspace, model_dir=None, engine_factory=None):
         self.workspace = Path(workspace).resolve()
         self.workspace.mkdir(parents=True, exist_ok=True)
-        self.model_dir = Path(model_dir or REFERENCE / 'guide_models').resolve()
+        self.model_dir = Path(model_dir or MODEL).resolve()
         self.engine_factory = engine_factory or load_engine
         self.items = {}
         self.lock = threading.RLock()

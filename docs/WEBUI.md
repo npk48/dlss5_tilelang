@@ -30,7 +30,7 @@ cd c:\work\dlss5_remake
 
 HDR 真输出仍是 float NPY；PNG/MP4 为 SDR 预览。完整配置、每帧记录、报告与后端记录可下载。
 上传为平铺目录：manifest 输入字段使用已上传文件的安全 basename，不允许绝对路径或目录穿越。
-估计器目录默认 `reference/guide_models/`；NR 权重由 Engine 从本地 `reference/` 加载，推理不联网下载。
+估计器与 NR 模型目录统一为仓库根 `model/`；Engine 只从本地加载，推理不联网下载。
 
 ## Engine 接口
 

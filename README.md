@@ -14,6 +14,9 @@ NR 的计划（arena 布局、buffer 归属、每步 launch 几何与参数）�
 
 # WebUI
 .venv/Scripts/python.exe whitebox_app.py
+
+# 独立 CUDA NR reference：prepared packet / 确定性 demo
+.venv/Scripts/python.exe reference/cuda_nr/run_packet.py --demo-size 320 384 --output <head.npy>
 ```
 
 `run.py` 的 `--backend tilelang`（默认）走完整白箱管线并调用 TileLang NR；
@@ -30,7 +33,8 @@ NR 的计划（arena 布局、buffer 归属、每步 launch 几何与参数）�
 | NR chain | `pipeline/nr_chain.py` | NR 输入、历史与输出混合 |
 | 应用调度 | `app/` | scoped backend dispatch 与 manifest 执行 |
 | 运行设施 | `runtime/` | reference bootstrap、设备策略、模型加载、FP8 编译器 |
-| 冻结参考 | `reference/` | 逐字节不变的模型、权重与 `whitebox_pipeline` 包 |
+| 冻结参考 | `reference/` | 冻结模型定义、`whitebox_pipeline` 与独立 `cuda_nr` CUDA 实现参考 |
+| 模型资产 | `model/` | NR BIN、RAFT/VDA checkpoints、hash manifest 与权利说明 |
 | WebUI | `whitebox_app.py`、`webui/` | 唯一服务入口与静态前端 |
 
 `tilelang_nr/README.md` 给出从公开入口追到计算的文件导览。
@@ -39,7 +43,7 @@ NR 的计划（arena 布局、buffer 归属、每步 launch 几何与参数）�
 
 1. Python 3.11 venv，安装 `requirements.txt`（已验证 Torch 2.5.1+cu124 / torchvision 0.20.1 /
    TileLang 0.1.14 / CUDA 12.9 bindings）。
-2. `reference/weights_ht_blob.bin` 与 `reference/guide_models/*.pth`：冻结权重，随工作树提供，不入 Git。
+2. `model/weights_ht_blob.bin`、`model/*.pth`：全部模型二进制统一放在根目录 `model/`，随工作树提供，不入 Git；hash 和来源见 `model/guide_models.json`。
 3. `.toolchains/cuda12.8/`：项目私有的 CUDA 12.8 NVRTC + CCCL + runtime。TileLang 的 FP8 内核
    （E4M3 转换与 F16 累加）需要 NVRTC ≥ 12.8，由 `runtime.fp8_compiler.private_compile` 只在编译这些内核时
    挂载，系统环境不变。缺它则内核编译直接报错。同样不入 Git。
@@ -49,8 +53,8 @@ NR 的计划（arena 布局、buffer 归属、每步 launch 几何与参数）�
 
 本仓库只保留唯一最终管线：TileLang NR + 外围管线设施 + 冻结参考。相对源仓库已剔除：
 
-- 原版 CUDA NR 的全部实现与分发产物：`native_nr/`（含 `cuda/*.cu`）、`native_nr_dist/`（含 ZIP）、
-  `cuda_native/`、`cuda` 默认后端；NR 计划已改为纯 Python，不再需要 NVRTC 编译计划模块；
+- 原版 CUDA NR 的旧生产接线、重复 support/WebUI/权重副本与分发缓存；整理后的唯一 CUDA 源码参考位于
+  `reference/cuda_nr/`，复用 `reference/dlss5_model.py`、`runtime/model_loader.py` 和根 `model/`，不参与纯 TileLang 默认路径；
 - TileLang 的中间组织与未采纳候选：旧 `tilelang_nr/legacy/`、endpoint / serial / parallel split、
   wide_packet、旧 joint/UP8 及 `experiments/archive/`；
 - NR 侧被 TileLang 取代的 Torch 融合层（`mega_*`、`compact_one_*`、`cooperative_*`、`layout_*`、

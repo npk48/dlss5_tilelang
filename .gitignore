@@ -6,8 +6,8 @@ outputs/
 .lux/
 
 # Frozen weights and guide checkpoints stay in the working tree, not in Git history.
-reference/weights_ht_blob.bin
-reference/guide_models/*.pth
+model/*.bin
+model/*.pth
 
 # Private CUDA 12.8 toolchain used to compile the native plan modules.
 .toolchains/

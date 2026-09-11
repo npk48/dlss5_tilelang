@@ -11,9 +11,9 @@ class Engine:
         tick=time.perf_counter()
         if fast_load:
             from runtime.model_loader import load_model
-            self.model,self.load_report=load_model(nr,bootstrap.REFERENCE/'weights_ht_blob.bin',device='cuda')
+            self.model,self.load_report=load_model(nr,bootstrap.MODEL/'weights_ht_blob.bin',device='cuda')
         else:
-            self.model=nr.load_model(bootstrap.REFERENCE/'weights_ht_blob.bin',device='cuda')
+            self.model=nr.load_model(bootstrap.MODEL/'weights_ht_blob.bin',device='cuda')
             self.load_report={'strategy':'original frozen decoder'}
         self.load_seconds=time.perf_counter()-tick;self.backend=Backend(nr,self.model)
     def close(self):

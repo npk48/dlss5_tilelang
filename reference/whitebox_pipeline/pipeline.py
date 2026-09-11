@@ -28,7 +28,7 @@ class GuidedPipeline:
         self.fsr_settings={**fsr_settings,'hdr':self.bridge.settings.hdr}
         self.fsr=FSR2(output_size,**self.fsr_settings)
         self.guides=GuideProcessor(guide_config or GuideConfig(validate=False))
-        self.model=model if model is not None else nr.load_model(Path(weights_path) if weights_path else Path(__file__).resolve().parents[1]/'weights_ht_blob.bin',device=str(self.device))
+        self.model=model if model is not None else nr.load_model(Path(weights_path) if weights_path else Path(__file__).resolve().parents[2]/'model'/'weights_ht_blob.bin',device=str(self.device))
         if nr_settings is not None and nr_passes is not None:raise ValueError('Use nr_settings OR nr_passes')
         self.nr_work_requested=nr_work_size
         self.chain=NRChain(self.model,output_size,nr_passes if nr_passes is not None else (nr_settings or NRSettings(),),nr_work_size)
