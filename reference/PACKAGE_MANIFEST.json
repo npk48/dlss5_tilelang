@@ -1,0 +1,291 @@
+{
+  "format": 1,
+  "source_commit": "1fb9f4ff4cfbdc4ab754a156d2d950502b762c84",
+  "created": "2026-09-06T14:37:30.084003+08:00",
+  "name": "DLSS5 whitebox pipeline",
+  "includes_separate_weight_files": true,
+  "model_sha256": "e796339b239f432fcedbefe823680befcafaf739e20ee2e29cfbf5c568984a1b",
+  "runtime_downloads": false,
+  "external_dependencies": [
+    "Python3.11",
+    "matching Torch/torchvision CUDA pair",
+    "FFmpeg + ffprobe for video"
+  ],
+  "entrypoints": [
+    "python -m whitebox_pipeline",
+    "python whitebox_app.py (explicit loopback start)"
+  ],
+  "rights_notice": "See WEIGHT_RIGHTS.md; local research bundle is not a public/commercial redistribution grant",
+  "files": [
+    {
+      "path": "DETAILED_MODEL_ARCHITECTURE.md",
+      "bytes": 48368,
+      "sha256": "ca82332e293f484b40920a1d9d0b819b13bf590ec395e2c4883a3bd09cbe50ab"
+    },
+    {
+      "path": "DLSS5_MINIMAL_MODEL.md",
+      "bytes": 8185,
+      "sha256": "a0b887c6d1b52d8c836dcd5140fed0ce049c735708f308ee0b4aa71a8791652c"
+    },
+    {
+      "path": "DLSS5_MODEL_API.md",
+      "bytes": 6756,
+      "sha256": "43f46c1267d023491bd88c2ed3ff1553716c3b38593fd7cd6b0945d5bfeadf0c"
+    },
+    {
+      "path": "P3_COLOR_AND_HISTORY.md",
+      "bytes": 8529,
+      "sha256": "90e50196bfab084763793753e3ec01fe55db3bc4dbcadcc8c255ab34ed5ffa79"
+    },
+    {
+      "path": "RGB_ESTIMATED_PIPELINE.md",
+      "bytes": 6800,
+      "sha256": "265a50307325106a7a7531f7ce43a5aef8d1cdca0e4b6537a035a401fdbac541"
+    },
+    {
+      "path": "WEIGHT_RIGHTS.md",
+      "bytes": 1649,
+      "sha256": "d5e54c11224442c4dca41bd5b45c3fa59060fb79c6edc505b0a2adb39a337804"
+    },
+    {
+      "path": "WHITEBOX_APP_README.md",
+      "bytes": 7063,
+      "sha256": "20c0af7fa9b13109b1ec798862658104207d2589a1cb1ceddea3b0bf7b85a8be"
+    },
+    {
+      "path": "WHITEBOX_IMAGE_PIPELINE_PLAN.md",
+      "bytes": 37329,
+      "sha256": "3f08a0a6c439bf34cd5f4d80959b1d97cbf1eb23bf3b9be8f04da5d72316cd7e"
+    },
+    {
+      "path": "WHITEBOX_PIPELINE.md",
+      "bytes": 9260,
+      "sha256": "4651b36b69b6efeb1a215d2e3a50aac656053fbf53333c36a57554a7aec43eda"
+    },
+    {
+      "path": "dlss5_model.py",
+      "bytes": 292725,
+      "sha256": "e796339b239f432fcedbefe823680befcafaf739e20ee2e29cfbf5c568984a1b"
+    },
+    {
+      "path": "guide_models/METRIC_SMALL_MODEL_CARD.md",
+      "bytes": 34,
+      "sha256": "f7697ac62edb3fb392d6761e2e8e328f902c2457c2560a1b40db259ab7baf75a"
+    },
+    {
+      "path": "guide_models/manifest.json",
+      "bytes": 1254,
+      "sha256": "e95a61e49846ed91ae8861ea9694a3ddc6f3ebbbc871803bff9a831d99ff1284"
+    },
+    {
+      "path": "guide_models/metric_video_depth_anything_vits.pth",
+      "bytes": 116444063,
+      "sha256": "3c28432b4e1f0d7bb31cad5151b6313b49457db5aa58d82e85bfb0f8b1311b33"
+    },
+    {
+      "path": "guide_models/raft_small_C_T_V2-01064c6d.pth",
+      "bytes": 4006189,
+      "sha256": "01064c6dba73b0fc9fc8edf772248560a00a3acfd62ac6677e9eeebad9680e27"
+    },
+    {
+      "path": "requirements-whitebox.txt",
+      "bytes": 431,
+      "sha256": "53dc6f7a80cd7a458ab0e99b03661a166432f308a6692507a41a25352b8d40f8"
+    },
+    {
+      "path": "tools/fetch_rgb_guide_weights.py",
+      "bytes": 3625,
+      "sha256": "587ac4ce597818c79394ed0283748ba811f44a33083c5eb4e8b9bfef8f251f21"
+    },
+    {
+      "path": "weights_ht_blob.bin",
+      "bytes": 147695410,
+      "sha256": "836f445d06ecd2e59bb9f17b84b91c143396fd76ccda1c9dc7fe81d5edd548f4"
+    },
+    {
+      "path": "whitebox_app.py",
+      "bytes": 9198,
+      "sha256": "8c83cc5f223b70242647f1a43df1f2389f7a13e1cca5ea93ae46efb161835081"
+    },
+    {
+      "path": "whitebox_pipeline/FSR2_LICENSE.txt",
+      "bytes": 1186,
+      "sha256": "1c255ca4b9d6e7440efdc5229e5d83ec68f7f1e7b296b2b4cc09a74b37728692"
+    },
+    {
+      "path": "whitebox_pipeline/NOTICE.txt",
+      "bytes": 1325,
+      "sha256": "6cb20297472a618e2b4a174ed0cbce6f56f2962b64ab293bb156491d87c79ec7"
+    },
+    {
+      "path": "whitebox_pipeline/__init__.py",
+      "bytes": 775,
+      "sha256": "2a64b4d68bae8d01d9f0e9a8c84dc41eb382e81389791c10de3e74a5726811f3"
+    },
+    {
+      "path": "whitebox_pipeline/__main__.py",
+      "bytes": 13867,
+      "sha256": "336127f0544b593f04dbebce154e5d9d5d0eaf8fd9ef8e6cdde6be5752a4dc6b"
+    },
+    {
+      "path": "whitebox_pipeline/_vda/LICENSE",
+      "bytes": 11556,
+      "sha256": "5ad8c213095c573921d7388edf93f6a9f54490b8ebf3b165ae8ef1947cf70846"
+    },
+    {
+      "path": "whitebox_pipeline/_vda/NOTICE",
+      "bytes": 235,
+      "sha256": "eb1924485486080eaf8cf94e617d599c476b85f7d43b68e9876b3aace8f5ff55"
+    },
+    {
+      "path": "whitebox_pipeline/_vda/SOURCES.json",
+      "bytes": 3879,
+      "sha256": "53a6545b36090c6ebd323c1faed58e4986780bb061cfd865640c57e66d9abe57"
+    },
+    {
+      "path": "whitebox_pipeline/_vda/__init__.py",
+      "bytes": 62,
+      "sha256": "86bb038a6a0311a28cd993933e7e1bfb1d5ed5bddcdce1f998c6abd261d2bbaf"
+    },
+    {
+      "path": "whitebox_pipeline/_vda/dinov2.py",
+      "bytes": 15593,
+      "sha256": "0505cf78bf0c88b97964cf973f34ab7e5574b7b63469d65abe55a7576bc8bb55"
+    },
+    {
+      "path": "whitebox_pipeline/_vda/dinov2_layers/__init__.py",
+      "bytes": 393,
+      "sha256": "c4a3e70c63d8c6c8c9e0c1b9e0eae5672ff73176146b7d2b10d36ae4974fa6d6"
+    },
+    {
+      "path": "whitebox_pipeline/_vda/dinov2_layers/attention.py",
+      "bytes": 2512,
+      "sha256": "68a88ce8a1a8a0e86f440d108d7672cf98828c3c9608493e0ddab2f146395787"
+    },
+    {
+      "path": "whitebox_pipeline/_vda/dinov2_layers/block.py",
+      "bytes": 9758,
+      "sha256": "50f635ae97ef6813aa3888965069ed2454c1d53b3e636d665a65a1a465627d68"
+    },
+    {
+      "path": "whitebox_pipeline/_vda/dinov2_layers/drop_path.py",
+      "bytes": 1195,
+      "sha256": "27abed4dd9dafa14157c9c7717bdca15fedb62702066f627b314bc91c06a1d53"
+    },
+    {
+      "path": "whitebox_pipeline/_vda/dinov2_layers/layer_scale.py",
+      "bytes": 851,
+      "sha256": "a79f5b673c3f1fa60173b1905501ecfeb7fe77bed9b5e35881390c12baecbdfa"
+    },
+    {
+      "path": "whitebox_pipeline/_vda/dinov2_layers/mlp.py",
+      "bytes": 1313,
+      "sha256": "9856d7274ca32428ff05dacf7adf8ad10fa81d7bb4e5d299ab57cf421dcc7620"
+    },
+    {
+      "path": "whitebox_pipeline/_vda/dinov2_layers/patch_embed.py",
+      "bytes": 2921,
+      "sha256": "2d949ea0eff33185d829995373c963cac6eaebf77b4808478a72934d89587e42"
+    },
+    {
+      "path": "whitebox_pipeline/_vda/dinov2_layers/swiglu_ffn.py",
+      "bytes": 2009,
+      "sha256": "effb1e2ac67a93ec5bf389aa12dd0c200bde4f07a25fa1627528b8b16651f4af"
+    },
+    {
+      "path": "whitebox_pipeline/_vda/dpt.py",
+      "bytes": 5626,
+      "sha256": "952c5ad29b556aa3875ad34425bd0e5a582c4b58a8a35820e4ba1f5b7df62975"
+    },
+    {
+      "path": "whitebox_pipeline/_vda/dpt_temporal.py",
+      "bytes": 5999,
+      "sha256": "fa20ce6bb2e9dab530aa91e49c374a4a0249cdc8c78c05d55e632abb4d0c9e45"
+    },
+    {
+      "path": "whitebox_pipeline/_vda/motion_module/__init__.py",
+      "bytes": 62,
+      "sha256": "86bb038a6a0311a28cd993933e7e1bfb1d5ed5bddcdce1f998c6abd261d2bbaf"
+    },
+    {
+      "path": "whitebox_pipeline/_vda/motion_module/attention.py",
+      "bytes": 17322,
+      "sha256": "a97637807e5d0c68ee0647ffa5a9a6c26111ce0e625f52f3210959b90be3566d"
+    },
+    {
+      "path": "whitebox_pipeline/_vda/motion_module/motion_module.py",
+      "bytes": 13239,
+      "sha256": "43ee1e2f8b5583910fc430475d885bbf4d6078e11b5ca934be3d975e943bcfc1"
+    },
+    {
+      "path": "whitebox_pipeline/_vda/util/__init__.py",
+      "bytes": 62,
+      "sha256": "86bb038a6a0311a28cd993933e7e1bfb1d5ed5bddcdce1f998c6abd261d2bbaf"
+    },
+    {
+      "path": "whitebox_pipeline/_vda/util/blocks.py",
+      "bytes": 4226,
+      "sha256": "35ac061b11de0dd6d556e5b72a386897088f4608b23581a37b0601bc4bd5f1c1"
+    },
+    {
+      "path": "whitebox_pipeline/cli.py",
+      "bytes": 4028,
+      "sha256": "54565a0f6ca7703ae7dc5493ef9274de9294ded604c84e7bcab68ab3e4a904bc"
+    },
+    {
+      "path": "whitebox_pipeline/color.py",
+      "bytes": 3911,
+      "sha256": "a75797fafb5176aa64cc6bccbe6425f1e7515b61be8b857f5c1f3b8df54a6b2e"
+    },
+    {
+      "path": "whitebox_pipeline/estimators.py",
+      "bytes": 9205,
+      "sha256": "a29ad7dff72881129f618023a18f7f3f6535e39f8850197a74e376b64b8e11b6"
+    },
+    {
+      "path": "whitebox_pipeline/fsr2.py",
+      "bytes": 25950,
+      "sha256": "41f4d639e995fb1faaf96987de3780d40ec38ef5c333a3adb78f9ff0411bb5c5"
+    },
+    {
+      "path": "whitebox_pipeline/guides.py",
+      "bytes": 9929,
+      "sha256": "e6145d1a270f5bf4f2e6c039a972eeab07806b03d8cd5fccb3d6664619f84d98"
+    },
+    {
+      "path": "whitebox_pipeline/media.py",
+      "bytes": 8891,
+      "sha256": "a1201fd3d9869f5879d2bf7633dd9f0234bf5367b4dc2e6006ffd73ae9b0224b"
+    },
+    {
+      "path": "whitebox_pipeline/nr_chain.py",
+      "bytes": 6189,
+      "sha256": "c7a7d06c4cc0c7d639b56ff45ca0eaa3f99894c3d14c88f6549d6d2de22d4e3e"
+    },
+    {
+      "path": "whitebox_pipeline/pipeline.py",
+      "bytes": 9750,
+      "sha256": "e69c8ebc9ab2b7f0752676fcbcacc3d7aa958b6ca6562716a4874eef7ee07e6a"
+    },
+    {
+      "path": "whitebox_pipeline/post.py",
+      "bytes": 3042,
+      "sha256": "6712e05e8468164858fe4b6ade97eec3c158abc5e697656eb254a827304ed6fc"
+    },
+    {
+      "path": "whitebox_pipeline/rgb_pipeline.py",
+      "bytes": 7609,
+      "sha256": "0deebf061eef67cfc568c411aa39e97e352c654b4d00c9b56d8f80443b6306db"
+    },
+    {
+      "path": "whitebox_pipeline/spatial.py",
+      "bytes": 2968,
+      "sha256": "9f527475b3905a88a646d831bc4641e87a9d81da63bba0835c849c5f46add847"
+    },
+    {
+      "path": "whitebox_ui/index.html",
+      "bytes": 9741,
+      "sha256": "8cc325aca950e4d79967e0e6415ea16d007c74b7fe51d8bf5e45961d11491399"
+    }
+  ]
+}

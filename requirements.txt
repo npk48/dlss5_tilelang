@@ -1,0 +1,20 @@
+# DLSS5 whitebox pipeline (TileLang NR)
+# Verified environment: Python 3.11 / Torch 2.5.1+cu124 / torchvision 0.20.1.
+# GPU must be SM89 (RTX 40 series); FFmpeg + ffprobe are required for video I/O.
+
+numpy
+torch==2.5.1
+torchvision==0.20.1
+Pillow
+einops==0.8.0
+Flask>=3.0
+
+# TileLang NR backend (isolated venv, verified with tilelang 0.1.14).
+tilelang==0.1.14
+apache-tvm-ffi==0.1.12
+torch-c-dlpack-ext==0.1.5
+cloudpickle==3.1.2
+z3-solver==4.15.4.0
+cuda-python==12.9.7
+cuda-bindings==12.9.7
+cuda-pathfinder==1.8.1

@@ -1,0 +1,82 @@
+{
+  "source": "https://github.com/DepthAnything/Video-Depth-Anything",
+  "commit": "4f5ae23172ba60fd7bc11ef671cca678842c7072",
+  "files": [
+    {
+      "file": "dinov2.py",
+      "source_sha256": "d22df8d0da44c8525ebed898fd9c33b3acfcda919a84d577cc2a08bfd3d50ac1",
+      "vendored_sha256": "d22df8d0da44c8525ebed898fd9c33b3acfcda919a84d577cc2a08bfd3d50ac1"
+    },
+    {
+      "file": "dpt.py",
+      "source_sha256": "4751fac16206892889d74fd7f564f275e0efa3a903172c9350a1b55ed850c7d8",
+      "vendored_sha256": "4751fac16206892889d74fd7f564f275e0efa3a903172c9350a1b55ed850c7d8"
+    },
+    {
+      "file": "dpt_temporal.py",
+      "source_sha256": "b80c448f4fe66d0ca7092be887c0ea3925a4ce7c03cffa0083480e7e2f55805d",
+      "vendored_sha256": "85d625beb6592ca56c88a5a777592906c0ebea42db2601972aa97ec3f93f0b13"
+    },
+    {
+      "file": "util/blocks.py",
+      "source_sha256": "8a9fde84bddbfa2498b5f5ef06895ddc941c1fc12c5919e9891fad481997b7dd",
+      "vendored_sha256": "8a9fde84bddbfa2498b5f5ef06895ddc941c1fc12c5919e9891fad481997b7dd"
+    },
+    {
+      "file": "dinov2_layers/attention.py",
+      "source_sha256": "0d2410ce8b8b4499a6b0cdab939ae2bceab8971efd8660d999b0f3088f28cbf7",
+      "vendored_sha256": "8d26f3233e348ed4392e298fed96783b675e4d09cbea45b21a22dc3e047cc5f7"
+    },
+    {
+      "file": "dinov2_layers/block.py",
+      "source_sha256": "093266ea08084c7cce7b8ddd779ecfaaa13055735faa8a7d68b5924f385b395b",
+      "vendored_sha256": "fb890b17befd58c0091c239a5ab0a89c60139be536f6ecedc24322166161179f"
+    },
+    {
+      "file": "dinov2_layers/drop_path.py",
+      "source_sha256": "949100aac4d9c19c9d65319dbd362886c5d46a72d7586ba4fd500e9f1d51570c",
+      "vendored_sha256": "949100aac4d9c19c9d65319dbd362886c5d46a72d7586ba4fd500e9f1d51570c"
+    },
+    {
+      "file": "dinov2_layers/layer_scale.py",
+      "source_sha256": "356817b5d1390737128cbcc03a5333fd3060b73beae478772282ccb851d0ef85",
+      "vendored_sha256": "356817b5d1390737128cbcc03a5333fd3060b73beae478772282ccb851d0ef85"
+    },
+    {
+      "file": "dinov2_layers/mlp.py",
+      "source_sha256": "c18c5b3f021408597a473bb710070ec3fb3b39f5a2e42e88ae83ced425a608b5",
+      "vendored_sha256": "c18c5b3f021408597a473bb710070ec3fb3b39f5a2e42e88ae83ced425a608b5"
+    },
+    {
+      "file": "dinov2_layers/patch_embed.py",
+      "source_sha256": "b3f82e19926c9cfb63f10136aca5e8a723bde1ad62dae1d04f90d405f9439baf",
+      "vendored_sha256": "b3f82e19926c9cfb63f10136aca5e8a723bde1ad62dae1d04f90d405f9439baf"
+    },
+    {
+      "file": "dinov2_layers/swiglu_ffn.py",
+      "source_sha256": "df81d9901240214edc1831ce1b77558dcd6227b29a2f000fc5f546df55d2d09a",
+      "vendored_sha256": "42094ea1124fd5b39b11ded75a81aa146f165a30bcc923a2924f868b1e0d9183"
+    },
+    {
+      "file": "dinov2_layers/__init__.py",
+      "source_sha256": "e3c28c7b775165b6844000eb69f44d104d6c3803ac7da5d59f6ac3ecfb46d9d8",
+      "vendored_sha256": "e3c28c7b775165b6844000eb69f44d104d6c3803ac7da5d59f6ac3ecfb46d9d8"
+    },
+    {
+      "file": "motion_module/attention.py",
+      "source_sha256": "15e4049641f04f73027ea520ada3ba2c81196cea1339f0d6a6063d944df61c8b",
+      "vendored_sha256": "779c7a6a144d3cf93acd0027a85c24997e0c60becb82fc3f6391f68b799eb58b"
+    },
+    {
+      "file": "motion_module/motion_module.py",
+      "source_sha256": "73d6a9cee40681532ae2603dd426405e840dc5c592a313005fa367f6fe4c69e8",
+      "vendored_sha256": "2d015d706782426b8cf8614e0f4df0d499630b5fb13cdc308afc09815447952f"
+    }
+  ],
+  "changes": [
+    "Only neural architecture files are vendored; streaming Tensor adapter is authored separately",
+    "EasyDict kwargs replaced by ordinary dict; no extra dependency",
+    "Optional xformers import is disabled to select the upstream pure-Torch attention path"
+  ],
+  "hash_format": "SHA256 of UTF-8 source text normalized to LF newlines"
+}

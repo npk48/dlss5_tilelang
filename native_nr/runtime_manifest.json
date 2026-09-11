@@ -1,0 +1,60 @@
+{
+  "format": 2,
+  "scope": "Actual repository default NR. Same 13 core source files as the qualified d791931 distribution; paths and runtime caches resolve inside this repo.",
+  "files": {
+    "native_nr/device.py": {
+      "sha256": "a9baab06aabfcd2e365fa2e078746851b9c21bba9566aafcc47accc184288123",
+      "kind": "runtime"
+    },
+    "native_nr/layouts.py": {
+      "sha256": "1d9156ec70900347a1d81941bb35e961819c2b7b44104fd0b09905373110889b",
+      "kind": "runtime"
+    },
+    "native_nr/runtime.py": {
+      "sha256": "b5cff074c33b47e1ab7b0c38aa3c92485c13d23f99c03ca4162f0e925590cb48",
+      "kind": "runtime"
+    },
+    "native_nr/source.py": {
+      "sha256": "223692219b3bc69068344cbe839cad686fc270c153b1b85cdc3ec3f52acf94e7",
+      "kind": "runtime"
+    },
+    "native_nr/__init__.py": {
+      "sha256": "119cf4bb7b366983a577d15a9932e7bab53b7a8b3768fc52f14f4710c806fef8",
+      "kind": "runtime"
+    },
+    "native_nr/cuda/bridge.cu": {
+      "sha256": "c3eb6da00fe18215d96a460aa222c705fcdd354788bf18f8093c8a7a8f59073b",
+      "kind": "CUDA functional group"
+    },
+    "native_nr/cuda/deep16.cu": {
+      "sha256": "463b11f4f7f0999e720b4edefe2da2b5c13d804f1aeb2333051d6f9be06f6abe",
+      "kind": "CUDA functional group"
+    },
+    "native_nr/cuda/heads2.cu": {
+      "sha256": "ff163077c0a549b4f4cdffc47207fe9ff38ee76b4c39ebaafaa6434e8f6c6ffa",
+      "kind": "CUDA functional group"
+    },
+    "native_nr/cuda/heads4.cu": {
+      "sha256": "9b766cd7efe90afea5f9761a60d17f8f2dc038e0da856a31c8b0d9f8e3c88de0",
+      "kind": "CUDA functional group"
+    },
+    "native_nr/cuda/heads8.cu": {
+      "sha256": "46b1054f84edda08e5e80f90799b3e80c7ca478824253ff43bc32ac9f4986163",
+      "kind": "CUDA functional group"
+    },
+    "native_nr/cuda/shallow.cu": {
+      "sha256": "e7d6e18fad6b37771c13a7ef3238fa7dcaa3e0e359b92bb1767dc82abc8db143",
+      "kind": "CUDA functional group"
+    },
+    "native_nr/cuda/utility.cu": {
+      "sha256": "6271a521135ac5634a7390d74162a4dc867e1fbbecc1d13ecafc63402243d4d3",
+      "kind": "CUDA functional group"
+    },
+    "native_nr/cuda/vit.cu": {
+      "sha256": "c590712a6d2eb49b9b10041243fb1ba061e94ef9a78d893cdf039a3d5a0aac39",
+      "kind": "CUDA functional group"
+    }
+  },
+  "distribution_source": "native_nr_dist/native_nr",
+  "legacy_provenance": "native_nr/evidence/template_sources_5c9.json"
+}

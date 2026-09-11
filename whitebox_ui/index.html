@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>白箱图像管线</title>
+<style>body{font:15px system-ui,sans-serif;background:#101721;color:#dee8f3;margin:0}main{max-width:1160px;margin:auto;padding:24px}h1{font-size:24px}section{background:#192431;padding:20px;border-radius:12px;margin:16px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}label{display:flex;flex-direction:column;gap:6px;color:#adc0d4}input,select,textarea,button{font:inherit;padding:9px;border:1px solid #496176;border-radius:6px;background:#101c29;color:#eef5ff}button{cursor:pointer;background:#244e6c}button:disabled{opacity:.45;cursor:default}textarea{width:100%;box-sizing:border-box;font:13px monospace;min-height:180px}small{color:#b8c5d2}.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}#preview{max-width:100%;max-height:65vh;display:none;background:repeating-conic-gradient(#333 0 25%,#555 0 50%) 0/16px 16px}a{color:#85ceff}progress{width:100%;height:20px}.warn{color:#ffd88b}#error{color:#ffb5b5}.job{padding:8px;cursor:pointer;border-bottom:1px solid #36475a}.inline{flex-direction:row;align-items:center}#outputFiles{max-height:240px;overflow:auto;display:flex;gap:12px;flex-wrap:wrap}</style>
+</head><body><main><h1>白箱时域 + NR 图像管线</h1><div id="model">模型尚未加载</div><small>本地处理 · 固定NR权重 · RGB使用估计guides而非真实几何 · 无运行时下载</small>
+<section><div class="grid">
+<label>计算路线<select id="nrBackend"><option value="tilelang-vit">TileLang NR（VitJoint）</option><option value="torch">全Torch参考</option></select></label>
+<label>输入类型<select id="kind"><option value="video">视频（逐帧处理）</option><option value="images">批量独立图片（逐张reset）</option><option value="sequence">连续图像序列</option></select></label>
+<label>文件<input id="files" type="file" multiple></label>
+<label>输出高度<input id="height" type="number" min="32" value="540"></label><label>输出宽度<input id="width" type="number" min="32" value="960"></label>
+<label>输入编码<select id="encoding"><option>sRGB</option><option>linear</option><option>linear709_nits</option><option>PQ2020</option></select></label>
+<label>视频transfer（未标注时需选择）<select id="transfer"><option value="">自动读取标签</option><option value="BT709">明确按BT.709解释</option><option value="sRGB">明确按sRGB解释</option><option value="PQ">PQ/ST.2084</option></select></label>
+<label>视频YUV矩阵<select id="matrix"><option value="">自动读取标签</option><option value="bt709">明确BT.709</option><option value="bt601">明确BT.601</option><option value="bt2020">明确BT.2020</option></select></label>
+<label>最多视频帧数（空=全部）<input id="limit" type="number" min="1"></label>
+<label>NR pass数量<input id="passes" type="number" min="1" max="30" value="1"></label><label>Local Structure<input id="structure" type="number" step=".1" value="2"></label>
+<label>NR工作高度（空=输出）<input id="workH" type="number" min="32"></label><label>NR工作宽度（空=输出）<input id="workW" type="number" min="32"></label>
+<label>NR差分放大<select id="resample"><option value="bilinear">Bilinear差分</option><option value="easu">EASU差分（仅放大）</option></select></label>
+<label>全局输出mix<input id="mix" type="number" min="0" max="1" step=".1" value="1"></label>
+<label>假设垂直FOV（度）<input id="fov" type="number" min="1" max="179" value="60"></label>
+<label class="inline"><input id="mp4" type="checkbox">额外静音SDR MP4预览</label></div>
+<p class="warn">新CUDA仅指NR，外围使用TileLang路线，并非整条管线CUDA。尺寸沿用原neural_size策略，不固定到1088×1920，不自动退回旧NR。编译和shape准备可能耗时，不承诺实时。</p>
+<p class="warn">HDR真输出为float NPY；PNG/MP4是SDR预览。MP4不保留alpha/音频；RGBA请用帧序列。连续图片按文件名排序（建议零补齐序号）。相机参数是明确假设，不是自动标定。</p>
+<div class="row"><button id="generate">生成manifest</button><label class="inline"><input id="advanced" type="checkbox">使用下方manifest（guided、HDR、保护、帧级参数）</label></div>
+<textarea id="spec" spellcheck="false"></textarea><p><button id="start">加入任务队列</button></p><div id="error" role="alert"></div></section>
+<section><div class="row"><strong id="jobTitle">尚无任务</strong><button id="cancel" disabled>取消任务</button><button id="reset" disabled>下一帧显式reset</button></div><p id="stage"></p><progress id="progress" max="1" value="0"></progress><p id="counts"></p>
+<pre id="metrics">实际尺寸、调用数和耗时：未测</pre><img id="preview" alt="最近完成帧"><div class="row" id="downloads"></div>
+<details id="outputList"><summary>全部输出文件（含已完成帧）</summary><div id="outputFiles"></div><div class="row"><button id="prevFiles">上一页</button><span id="filePage"></span><button id="nextFiles">下一页</button></div></details>
+<details><summary>有效设置、分辨率与guide来源</summary><pre id="details"></pre></details></section><section><h3>最近任务（每项历史独立）</h3><div id="jobs"></div></section></main>
+<script src="/ui/app.js" defer></script></body></html>

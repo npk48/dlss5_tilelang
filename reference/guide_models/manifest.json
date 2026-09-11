@@ -1,0 +1,27 @@
+{
+  "models": [
+    {
+      "name": "raft-small-C_T_V2",
+      "file": "raft_small_C_T_V2-01064c6d.pth",
+      "url": "https://download.pytorch.org/models/raft_small_C_T_V2-01064c6d.pth",
+      "prefix": "01064c6d",
+      "sha256": "01064c6dba73b0fc9fc8edf772248560a00a3acfd62ac6677e9eeebad9680e27",
+      "bytes": 4006189
+    },
+    {
+      "name": "metric-video-depth-anything-small",
+      "file": "metric_video_depth_anything_vits.pth",
+      "url": "https://huggingface.co/depth-anything/Metric-Video-Depth-Anything-Small/resolve/273d090f2ce17df50c2872d82c8322c45da5b4dd/metric_video_depth_anything_vits.pth",
+      "sha256": "3c28432b4e1f0d7bb31cad5151b6313b49457db5aa58d82e85bfb0f8b1311b33",
+      "revision": "273d090f2ce17df50c2872d82c8322c45da5b4dd",
+      "model_license": "apache-2.0",
+      "bytes": 116444063
+    }
+  ],
+  "torch": "2.5.1+cu124",
+  "torchvision": "0.20.1+cu124",
+  "depth_source_repo": "https://github.com/DepthAnything/Video-Depth-Anything",
+  "depth_source_commit": "4f5ae23172ba60fd7bc11ef671cca678842c7072",
+  "raft_license_note": "Torchvision source BSD-3-Clause; checkpoint/data and redistribution terms require separate review; local research use here",
+  "nr_weights_not_relicensed": true
+}
