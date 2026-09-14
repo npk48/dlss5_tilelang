@@ -13,7 +13,7 @@ sys.dont_write_bytecode = True
 sys.path[:0] = [str(ROOT), str(ROOT / 'reference')]
 tempfile.tempdir = str(OUT)
 from cuda_nr import layouts as L, source as S
-EXE = Path(__file__).with_name('build') / 'Release/nr_smoke.exe'
+EXE = Path(os.environ.get('NR_SMOKE_EXE', str(Path(__file__).with_name('build') / 'Release/nr_smoke.exe')))
 
 def layouts(shapes):
     report = []
@@ -54,14 +54,28 @@ def layouts(shapes):
             if not np.array_equal(actual,value):
                 bad=np.flatnonzero(actual!=value) if actual.size==value.size else []
                 raise AssertionError((h,w,name,actual.size,value.size,[(int(i),int(actual[i]),int(value[i])) for i in bad[:8]]))
+        route_arrays = 0
         for heads in [4,8]:
-            # C++ whitespace is different; emitted CUDA tokens must be identical.
-            actual=re.sub(r'\s+','',(path/f'routes{heads}.cuh').read_text())
-            expected_text=re.sub(r'\s+','',S.routes(heads,ds[heads],up[heads]))
-            if actual!=expected_text:
-                (path/f'reference_routes{heads}.cuh').write_text(S.routes(heads,ds[heads],up[heads]))
-                raise AssertionError((h,w,'generated routes differ',heads))
-        report.append({'shape':[h,w],'integer_arrays_exact':len(expected),'route_headers_token_exact':2})
+            # Geometry is now GPU data, not CUDA literals. Compare its bytes against
+            # the original Python generator's arrays, independently of generic code.
+            source = S.routes(heads,ds[heads],up[heads])
+            for name in ['ds_ids','ds_rows','up_ids','up_local','up_global']:
+                match = re.search(r'\b'+name+r'(?:\[\d+\])+\s*=\s*\{(.*?)\};', source, re.S)
+                if match is None:
+                    raise AssertionError(('missing reference route', heads, name))
+                dtype = 'i1' if name in ['ds_rows','up_local'] else '<i4'
+                value = np.asarray([int(x) for x in re.findall(r'-?\d+',match[1])], dtype=dtype)
+                actual = np.fromfile(path/f'routes{heads}_{name}.bin', dtype=dtype)
+                if not np.array_equal(actual,value):
+                    raise AssertionError((h,w,'runtime routes differ',heads,name))
+                route_arrays += 1
+        for heads in [2,4,8]:
+            value = np.asarray(ds[heads][1]).reshape(-1,heads*64)[:,0]
+            value = np.where(value < 0, -1, value // 16).astype('<i4')
+            actual = np.fromfile(path/f'pixels{heads}.bin','<i4')
+            if not np.array_equal(actual,value):
+                raise AssertionError((h,w,'runtime transition addresses differ',heads))
+        report.append({'shape':[h,w],'integer_arrays_exact':len(expected),'runtime_route_arrays_exact':route_arrays,'transition_arrays_exact':3})
         print('LAYOUT PASS',h,w,flush=True)
     (OUT/'layouts.json').write_text(json.dumps(report,indent=2))
 

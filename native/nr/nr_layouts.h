@@ -344,36 +344,35 @@ inline Up up_metadata(const Plan &p)
     }
     return a;
 }
-inline std::string array_text(const std::string &name, const Vec &v, const std::vector<int> &dims,
-                              const std::string &kind = "int")
+struct RuntimeTable
 {
+    std::string name;
+    std::vector<unsigned char> bytes;
+};
+inline std::string runtime_array(std::vector<RuntimeTable> &tables, const std::string &name,
+                                 const Vec &v, const std::vector<int> &dims,
+                                 const std::string &kind = "int")
+{
+    RuntimeTable table{name, {}};
+    if (kind == "signed char") {
+        table.bytes.reserve(v.size());
+        for (int n : v) {
+            if (n < -128 || n > 127) throw std::runtime_error("NR route exceeds int8");
+            table.bytes.push_back(static_cast<unsigned char>(n));
+        }
+    } else {
+        const auto *p = reinterpret_cast<const unsigned char *>(v.data());
+        table.bytes.assign(p, p + v.size() * sizeof(int32_t));
+    }
+    tables.push_back(std::move(table));
     std::ostringstream s;
-    s << "__device__ const " << kind << " " << name;
-    for (int n : dims)
-        s << "[" << n << "]";
-    s << "={";
-    size_t stride = 1;
-    std::vector<size_t> strides(dims.size());
-    for (int i = int(dims.size()) - 1; i >= 0; --i)
-    {
-        strides[i] = stride;
-        stride *= dims[i];
+    s << "extern \"C\" { __device__ __constant__ const " << kind;
+    if (dims.size() == 1) s << " *" << name;
+    else {
+        s << " (*" << name << ")";
+        for (size_t i = 1; i < dims.size(); ++i) s << "[" << dims[i] << "]";
     }
-    if (stride != v.size())
-        throw std::runtime_error("array dimensions mismatch");
-    for (size_t i = 0; i < v.size(); ++i)
-    {
-        for (size_t j = 0; j + 1 < dims.size(); ++j)
-            if (i % strides[j] == 0)
-                s << "{";
-        s << v[i];
-        for (size_t j = dims.size(); j-- > 1;)
-            if ((i + 1) % strides[j - 1] == 0)
-                s << "}";
-        if (i + 1 < v.size())
-            s << ",";
-    }
-    s << "};\n";
+    s << "; }\n";
     return s.str();
 }
 struct Classes
@@ -396,7 +395,7 @@ inline Classes classes(const Vec &v, int width)
         a.ids.push_back(m.at(Vec(v.begin() + i, v.begin() + i + width)));
     return a;
 }
-inline std::string routes(int H, const Pool &ds, const Up &up)
+inline std::string routes(int H, const Pool &ds, const Up &up, std::vector<RuntimeTable> &tables)
 {
     int K = H * 32;
     Vec rows(ds.tiles * 64);
@@ -431,11 +430,11 @@ inline std::string routes(int H, const Pool &ds, const Up &up)
     }
     auto u = classes(local, 64);
     std::ostringstream s;
-    s << array_text("ds_ids", d.ids, {ds.tiles})
-      << array_text("ds_rows", d.data, {d.count, 16, 4}, "signed char")
-      << array_text("up_ids", u.ids, {up.tiles})
-      << array_text("up_local", u.data, {u.count, 64}, "signed char")
-      << array_text("up_global", global, {up.tiles, 16});
+    s << runtime_array(tables, "ds_ids", d.ids, {ds.tiles})
+      << runtime_array(tables, "ds_rows", d.data, {d.count, 16, 4}, "signed char")
+      << runtime_array(tables, "up_ids", u.ids, {up.tiles})
+      << runtime_array(tables, "up_local", u.data, {u.count, 64}, "signed char")
+      << runtime_array(tables, "up_global", global, {up.tiles, 16});
     s << "template<int First> __device__ __forceinline__ void collect_pool(Frag (&out)[4][4],u32 "
          "(&a)[4]) {\n int l=threadIdx.x,cid=ds_ids[blockIdx.x];\n";
     for (int first : {0, 2})
@@ -449,20 +448,14 @@ inline std::string routes(int H, const Pool &ds, const Up &up)
                 s << " {int k=route(" << word / 2 * 16 << "+(l&3)*4+" << pair * 2 << ");\n";
                 for (int leaf = 0; leaf < 4; ++leaf)
                 {
-                    std::set<int> banks;
-                    for (int cls = 0; cls < d.count; ++cls)
-                        for (int lane = 0; lane < 32; ++lane)
-                        {
-                            int rr = d.data[(cls * 16 + lane / 4 + (word & 1) * 8) * 4 + leaf];
-                            int k = word / 2 * 16 + (lane & 3) * 4 + pair * 2;
-                            k = (k & ~14) | ((k & 2) << 2) | ((k & 4) >> 1) | ((k & 8) >> 1);
-                            if (rr >= 0 && rr / 32 == first / 2)
-                                banks.insert((rr % 32 / 16) * 8 + (k / 8) * 2 + rr % 16 / 8);
-                        }
                     s << " int r" << leaf << "=ds_rows[cid][row][" << leaf << "]; u32 v" << leaf
                       << "=0;\n {int rr=r" << leaf
                       << ",bank=(rr&16)/16*8+(k/8)*2+(rr&8)/8,src=(rr&7)*4+(k&7)/2;\n";
-                    for (int bank : banks)
+                    // route() moves pair's bit1 into bit3; lane bits stay below
+                    // bit3. Thus k/8 == 2*(word/2)+pair for every lane and shape.
+                    // Only rr bits4 and3 vary: four architectural banks, not16.
+                    const int base_bank = 4 * (word / 2) + 2 * pair;
+                    for (int bank : {base_bank, base_bank + 1, base_bank + 8, base_bank + 9})
                         s << " u32 b" << bank << "=__shfl_sync(0xffffffff,out[" << first + bank / 8
                           << "][" << bank % 8 / 2 << "]." << (bank % 2 ? 'y' : 'x')
                           << ",src); if(rr>=0 && rr/32==" << first / 2 << " && bank==" << bank
@@ -486,7 +479,7 @@ inline std::string routes(int H, const Pool &ds, const Up &up)
     s << "}\n";
     return s.str();
 }
-inline std::string addresses(const Shape &s, const std::map<int, Pool> &ds)
+inline std::string addresses(const std::map<int, Pool> &ds, std::vector<RuntimeTable> &tables)
 {
     std::string text = "namespace transition_packet {\n";
     for (int H : {2, 4, 8})
@@ -495,13 +488,11 @@ inline std::string addresses(const Shape &s, const std::map<int, Pool> &ds)
         Vec pixels(p.tiles * 16);
         for (size_t i = 0; i < pixels.size(); ++i)
             pixels[i] = p.output[i * H * 64] < 0 ? -1 : p.output[i * H * 64] / 16;
-        text += array_text("pixels" + std::to_string(H), pixels, {p.tiles, 16});
+        text += runtime_array(tables, "pixels" + std::to_string(H), pixels, {p.tiles, 16});
     }
     text += "__device__ __forceinline__ int pixel(int H,int tile,int row){return "
             "H==2?pixels2[tile][row]:H==4?pixels4[tile][row]:pixels8[tile][row];}\n";
-    text += "__device__ __forceinline__ int count(int H){return H==2?" +
-            std::to_string(s.h / 8 * (s.w / 8)) + ":H==4?" + std::to_string(s.h / 16 * (s.w / 16)) +
-            ":" + std::to_string(s.dh * s.dw) + ";}\n";
+    text += "__device__ __forceinline__ int count(int H){return H==2?(NR_H/8)*(NR_W/8):H==4?(NR_H/16)*(NR_W/16):DH*DW;}\n";
     return text + "__device__ __forceinline__ int planar(int p,int c,int n){return "
                   "p*16+(c/16)*n*16+(c&1)+((c&6)<<1)+((c&8)>>2);}\n}\n";
 }

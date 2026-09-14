@@ -45,6 +45,7 @@ void dump(int h, int w, const std::filesystem::path &dir)
     std::filesystem::create_directories(dir);
     Shape s(h, w);
     std::map<int, Pool> ds;
+    std::vector<RuntimeTable> tables;
     for (auto v : {std::pair<int, int>{2, 8}, {4, 14}, {8, 22}})
     {
         auto p = pool_metadata(s.outer(v.second));
@@ -57,11 +58,18 @@ void dump(int h, int w, const std::filesystem::path &dir)
         auto p = up_metadata(s.outer(v.second));
         write(dir / ("up" + std::to_string(v.first) + "_input.i32"), p.input);
         write(dir / ("up" + std::to_string(v.first) + "_inverse.i32"), p.inverse);
-        if (v.first != 2)
-            text(dir / ("routes" + std::to_string(v.first) + ".cuh"),
-                 routes(v.first, ds.at(v.first), p));
+        if (v.first != 2) {
+            tables.clear();
+            const auto prefix = "routes" + std::to_string(v.first);
+            text(dir / (prefix + ".cuh"), routes(v.first, ds.at(v.first), p, tables));
+            for (const auto &table : tables)
+                write(dir / (prefix + "_" + table.name + ".bin"), table.bytes);
+        }
     }
-    text(dir / "addresses.cuh", addresses(s, ds));
+    tables.clear();
+    text(dir / "addresses.cuh", addresses(ds, tables));
+    for (const auto &table : tables)
+        write(dir / (table.name + ".bin"), table.bytes);
     int ph = align(s.dh, 8) / 2, pw = align(s.dw, 8) / 2;
     auto pc = pointmap(ph, pw, 1024), ff = pointmap(ph, pw, 4096),
          pool = raw16(ph, pw, false, true);
@@ -135,6 +143,13 @@ int main(int argc, char **argv)
                 auto start = std::chrono::steady_clock::now();
                 std::cout << "prepare " << h << "x" << w << std::endl;
                 engine.prepare(h, w);
+                const auto audit = engine.audit();
+                if (audit.nvrtc_compiles + audit.kernel_pack_loads != 8 || audit.module_loads != 8)
+                    throw std::runtime_error("runtime grid caused a module recompile/reload");
+                std::cout << "audit nvrtc=" << audit.nvrtc_compiles << " modules="
+                          << audit.module_loads << " prepares=" << audit.prepares
+                          << " compile_ms=" << audit.compile_ms << " upload_ms=" << audit.upload_ms
+                          << " layout_allocation_ms=" << audit.last_layout_allocation_ms << std::endl;
                 double prep =
                     std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
                 ck(cuMemcpyHtoDAsync(input.p, packet.data(), packet.size() * 4, stream));

@@ -10,6 +10,13 @@ namespace dlss5::nr
 // model_dir contains the original weights_ht_blob.bin (no derived weight pack).
 // Set NATIVE_NR_TOOLCHAIN to the CUDA 12.8 root containing nvrtc/bin,
 // runtime/include and cccl/include. No Python, Torch or reference sources needed.
+struct AuditStats
+{
+    unsigned long long nvrtc_compiles = 0, module_loads = 0, prepares = 0, kernel_pack_loads = 0;
+    double last_prepare_ms = 0;
+    double compile_ms = 0, module_load_ms = 0, upload_ms = 0, kernel_pack_load_ms = 0;
+    double last_layout_allocation_ms = 0;
+};
 class Engine
 {
   public:
@@ -20,8 +27,11 @@ class Engine
     Engine(Engine &&) = delete;
     Engine &operator=(Engine &&) = delete;
     // Synchronous preparation, one retained shape; same-shape calls are cheap.
+    // Eight geometry-independent modules compile once per Engine, not per shape.
+    // New geometry/table constants activate on the first infer's caller stream.
     // H and W >=64 and multiples of 64, subject to memory/int32 address limits.
     void prepare(int h, int w);
+    AuditStats audit() const;
     // packet: contiguous float32 [1,16,H,W]; head: float32 [1,H,W,4].
     // Both caller-owned, >=16-byte aligned, disjoint, in the retained context.
     // Requires a matching prepare; no allocations or compilation during infer.

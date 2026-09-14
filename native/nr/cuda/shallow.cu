@@ -3581,7 +3581,8 @@ __device__ __forceinline__ void publish_compact(const HC<32, 32> &z, u8 *data, h
 #error Native NR must compile with its real packet width
 #endif
 namespace shallow_static {
-constexpr int H = NR_H / 2, W = NR_W / 2;
+__device__ __forceinline__ int height() { return NR_H / 2; }
+__device__ __forceinline__ int width() { return NR_W / 2; }
 __device__ __forceinline__ int token(int r) {
     return (r & 48) | ((r & 7) << 1) | ((r & 8) >> 3);
 }
@@ -3601,18 +3602,18 @@ __device__ __forceinline__ int ptoc(int t) {
 __device__ __forceinline__ int compact(int y, int x, int c) {
     int t = ctop((y & 7) * 8 + (x & 7)), k = (c & 3) | ((c & 4) << 2) | ((c & 24) >> 1);
     int l = (k >> 4) * 1024 + t * 16 + (k & 15);
-    return (((y >> 3) + (H / 8) * (l >> 10)) * (W / 4) + (x >> 5) + (W / 32) * ((l >> 7) & 7)) *
+    return (((y >> 3) + (height() / 8) * (l >> 10)) * (width() / 4) + (x >> 5) + (width() / 32) * ((l >> 7) & 7)) *
                512 +
            ((x >> 3) & 3) * 128 + (l & 127);
 }
 template <int Seq, bool Output = false> __device__ __forceinline__ int address(int row, int c) {
-    constexpr int phase = Seq >= 151 ? Seq - 151 : Seq - 3,
-                  gx = W / 8 + ((phase == 1 || phase == 2) ? 1 : 0);
+    constexpr int phase = Seq >= 151 ? Seq - 151 : Seq - 3;
+    const int gx = width() / 8 + ((phase == 1 || phase == 2) ? 1 : 0);
     constexpr int sx = (phase == 1 || phase == 2) ? -1 : 0,
                   sy = (phase == 1 || phase == 3) ? -1 : 0;
     int stripe = row >> 4, cy = int(blockIdx.x) / gx * 2 + sy + (stripe == 1 || stripe == 2),
         cx = int(blockIdx.x) % gx * 2 + sx + (stripe == 2 || stripe == 3);
-    if (cy < 0 || cy >= H / 4 || cx < 0 || cx >= W / 4)
+    if (cy < 0 || cy >= height() / 4 || cx < 0 || cx >= width() / 4)
         return -1;
     if constexpr (Output)
         c = physical::nc(c);
@@ -3622,25 +3623,25 @@ template <int Seq, bool Output = false> __device__ __forceinline__ int address(i
             x = (cx >> 1) * 8 + ((row & 3) << 1) + ((row >> 3) & 1);
         return compact(y, x, c);
     }
-    return (cy * (W / 4) + cx) * 512 + (row & 7) * 64 + ((row >> 3) & 1) * 4 + 8 * (c >> 2) +
+    return (cy * (width() / 4) + cx) * 512 + (row & 7) * 64 + ((row >> 3) & 1) * 4 + 8 * (c >> 2) +
            (c & 3);
 }
 __device__ __forceinline__ int up_address(int row, int c) {
     int low = row & 63, outer = row >> 6;
-    int y = (outer / (W / 32)) * 4 + ((low >> 3) & 1) + 2 * (low & 1);
-    int x = (outer % (W / 32)) * 16 + ((low >> 1) & 1) + 2 * ((low >> 2) & 1) +
+    int y = (outer / (width() / 32)) * 4 + ((low >> 3) & 1) + 2 * (low & 1);
+    int x = (outer % (width() / 32)) * 16 + ((low >> 1) & 1) + 2 * ((low >> 2) & 1) +
             4 * ((low >> 4) & 1) + 8 * ((low >> 5) & 1);
-    return (y * (W / 2) + x) * 16 + (c >> 4) * (H / 2) * (W / 2) * 16 + (c & 15);
+    return (y * (width() / 2) + x) * 16 + (c >> 4) * (height() / 2) * (width() / 2) * 16 + (c & 15);
 }
 __device__ __forceinline__ int pool_row(int cta, int owner) {
-    int by = cta / (W / 8), bx = cta % (W / 8);
-    if ((by == 0 || by == H / 8) && owner >= 8)
+    int by = cta / (width() / 8), bx = cta % (width() / 8);
+    if ((by == 0 || by == height() / 8) && owner >= 8)
         return -1;
     int y = (by == 0 ? 0 : by * 4 - 2) + (owner >> 2);
-    return y * (W / 2) + bx * 4 + (owner & 3);
+    return y * (width() / 2) + bx * 4 + (owner & 3);
 }
 __device__ __forceinline__ int pool_address(int row, int c) {
-    return row * 16 + (c >> 4) * (H / 2) * (W / 2) * 16 + (c & 1) + ((c & 6) << 1) + ((c & 8) >> 2);
+    return row * 16 + (c >> 4) * (height() / 2) * (width() / 2) * 16 + (c & 1) + ((c & 6) << 1) + ((c & 8) >> 2);
 }
 } // namespace shallow_static
 using namespace activation;
@@ -7486,7 +7487,8 @@ __device__ __forceinline__ void publish_compact(const HC<32, 32> &z, u8 *data, h
 #error Native NR must compile with its real packet width
 #endif
 namespace shallow_static {
-constexpr int H = NR_H / 2, W = NR_W / 2;
+__device__ __forceinline__ int height() { return NR_H / 2; }
+__device__ __forceinline__ int width() { return NR_W / 2; }
 __device__ __forceinline__ int token(int r) {
     return (r & 48) | ((r & 7) << 1) | ((r & 8) >> 3);
 }
@@ -7506,18 +7508,18 @@ __device__ __forceinline__ int ptoc(int t) {
 __device__ __forceinline__ int compact(int y, int x, int c) {
     int t = ctop((y & 7) * 8 + (x & 7)), k = (c & 3) | ((c & 4) << 2) | ((c & 24) >> 1);
     int l = (k >> 4) * 1024 + t * 16 + (k & 15);
-    return (((y >> 3) + (H / 8) * (l >> 10)) * (W / 4) + (x >> 5) + (W / 32) * ((l >> 7) & 7)) *
+    return (((y >> 3) + (height() / 8) * (l >> 10)) * (width() / 4) + (x >> 5) + (width() / 32) * ((l >> 7) & 7)) *
                512 +
            ((x >> 3) & 3) * 128 + (l & 127);
 }
 template <int Seq, bool Output = false> __device__ __forceinline__ int address(int row, int c) {
-    constexpr int phase = Seq >= 151 ? Seq - 151 : Seq - 3,
-                  gx = W / 8 + ((phase == 1 || phase == 2) ? 1 : 0);
+    constexpr int phase = Seq >= 151 ? Seq - 151 : Seq - 3;
+    const int gx = width() / 8 + ((phase == 1 || phase == 2) ? 1 : 0);
     constexpr int sx = (phase == 1 || phase == 2) ? -1 : 0,
                   sy = (phase == 1 || phase == 3) ? -1 : 0;
     int stripe = row >> 4, cy = int(blockIdx.x) / gx * 2 + sy + (stripe == 1 || stripe == 2),
         cx = int(blockIdx.x) % gx * 2 + sx + (stripe == 2 || stripe == 3);
-    if (cy < 0 || cy >= H / 4 || cx < 0 || cx >= W / 4)
+    if (cy < 0 || cy >= height() / 4 || cx < 0 || cx >= width() / 4)
         return -1;
     if constexpr (Output)
         c = physical::nc(c);
@@ -7527,25 +7529,25 @@ template <int Seq, bool Output = false> __device__ __forceinline__ int address(i
             x = (cx >> 1) * 8 + ((row & 3) << 1) + ((row >> 3) & 1);
         return compact(y, x, c);
     }
-    return (cy * (W / 4) + cx) * 512 + (row & 7) * 64 + ((row >> 3) & 1) * 4 + 8 * (c >> 2) +
+    return (cy * (width() / 4) + cx) * 512 + (row & 7) * 64 + ((row >> 3) & 1) * 4 + 8 * (c >> 2) +
            (c & 3);
 }
 __device__ __forceinline__ int up_address(int row, int c) {
     int low = row & 63, outer = row >> 6;
-    int y = (outer / (W / 32)) * 4 + ((low >> 3) & 1) + 2 * (low & 1);
-    int x = (outer % (W / 32)) * 16 + ((low >> 1) & 1) + 2 * ((low >> 2) & 1) +
+    int y = (outer / (width() / 32)) * 4 + ((low >> 3) & 1) + 2 * (low & 1);
+    int x = (outer % (width() / 32)) * 16 + ((low >> 1) & 1) + 2 * ((low >> 2) & 1) +
             4 * ((low >> 4) & 1) + 8 * ((low >> 5) & 1);
-    return (y * (W / 2) + x) * 16 + (c >> 4) * (H / 2) * (W / 2) * 16 + (c & 15);
+    return (y * (width() / 2) + x) * 16 + (c >> 4) * (height() / 2) * (width() / 2) * 16 + (c & 15);
 }
 __device__ __forceinline__ int pool_row(int cta, int owner) {
-    int by = cta / (W / 8), bx = cta % (W / 8);
-    if ((by == 0 || by == H / 8) && owner >= 8)
+    int by = cta / (width() / 8), bx = cta % (width() / 8);
+    if ((by == 0 || by == height() / 8) && owner >= 8)
         return -1;
     int y = (by == 0 ? 0 : by * 4 - 2) + (owner >> 2);
-    return y * (W / 2) + bx * 4 + (owner & 3);
+    return y * (width() / 2) + bx * 4 + (owner & 3);
 }
 __device__ __forceinline__ int pool_address(int row, int c) {
-    return row * 16 + (c >> 4) * (H / 2) * (W / 2) * 16 + (c & 1) + ((c & 6) << 1) + ((c & 8) >> 2);
+    return row * 16 + (c >> 4) * (height() / 2) * (width() / 2) * 16 + (c & 1) + ((c & 6) << 1) + ((c & 8) >> 2);
 }
 } // namespace shallow_static
 using namespace activation;

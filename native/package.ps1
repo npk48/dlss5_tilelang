@@ -39,6 +39,16 @@ Get-ChildItem $toolchain -Recurse -File | Where-Object { $_.Length -gt 0 -and $_
  }
 }
 if(Test-Path "$dest/native-sdk/.toolchains"){Remove-Item "$dest/native-sdk/.toolchains" -Recurse -Force}
+# One generic code pack per module/architecture, never per image size.
+$kernelSource="$repo/native/nr/kernels/sm89"
+$kernelFiles=@(Get-ChildItem $kernelSource -Filter '*.nrbin' -File)
+if($kernelFiles.Count -ne 8){throw 'Build the eight generic NR kernel packs before packaging (native/nr/kernels/README.md)'}
+foreach($unit in @('shallow','heads2','heads4','heads8','utility','deep16','vit','bridge')){
+ if(@($kernelFiles | Where-Object { $_.Name.StartsWith($unit+'-') }).Count -ne 1){throw "Missing/duplicate generic NR module: $unit"}
+}
+New-Item -ItemType Directory -Force "$runtime/nr/sm89" | Out-Null
+Get-ChildItem "$runtime/nr/sm89" -Filter '*.nrbin' -File | Remove-Item -Force
+$kernelFiles | Copy-Item -Destination "$runtime/nr/sm89" -Force
 if($IncludeModels){
  New-Item -ItemType Directory -Force "$dest/model/native_guides" | Out-Null
  Copy-Item "$repo/model/weights_ht_blob.bin" "$dest/model" -Force
@@ -72,5 +82,5 @@ See README.md for GPU/input limits and callback contracts.
 '@ | Set-Content "$dest/START.txt" -Encoding UTF8
 Get-FileHash "$dest/dlss5_server.exe","$bin/dlss5.dll","$lib/dlss5.lib" -Algorithm SHA256 | Format-List | Out-File "$dest/SHA256.txt"
 $commit=(& git -C $repo rev-parse HEAD).Trim()
-@{commit=$commit;layout='external-assets-dynamic-vda-v3';server='dlss5_server.exe';runtime='runtime';models='model';web_assets='assets';vda_spatial_mode='dynamic';dependency_extraction=$false;python_runtime=$false} | ConvertTo-Json | Set-Content "$dest/BUILD.json" -Encoding UTF8
+@{commit=$commit;layout='external-assets-runtime-spatial-v4';nr_spatial_mode='runtime';nr_kernel_packs='runtime/nr/sm89';server='dlss5_server.exe';runtime='runtime';models='model';web_assets='assets';vda_spatial_mode='dynamic';dependency_extraction=$false;python_runtime=$false} | ConvertTo-Json | Set-Content "$dest/BUILD.json" -Encoding UTF8
 Write-Host "Native external-asset delivery: $dest"

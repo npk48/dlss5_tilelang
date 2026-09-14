@@ -262,8 +262,10 @@ one job at a time. Up to four stream contexts and eight recent job results are
 retained. Changing backend/output configuration recreates its SDK session. Source-size
 changes use native preparation and reset spatial history without selecting a new
 VDA model or discarding estimator weights. Changes to structure/tone/style/skin/
-pass settings or mix use the live-control API. NR may still need shape-specific
-CUDA compilation when its neural work shape changes; this is not a VDA export requirement.
+pass settings or mix use the live-control API. NR also uses geometry-independent CUDA modules. Changing its work grid updates
+runtime geometry/maps/workspace, not compiled code. Qualified generic kernel packs
+in `runtime/nr/sm89` skip NVRTC on first preparation too; a developer without matching
+packs compiles the generic modules once, never once per image size.
 
 Image HTTP necessarily uploads/downloads pixels; use the DLL for GPU-native
 integration. WIC handles PNG/JPEG/BMP and preserves RGBA in PNG output; only the
@@ -290,3 +292,12 @@ learned per-pixel tone/structure masks, and optional output detail/luma/chroma g
 filters. Replacement callbacks are available; unsupported behavior is not silently
 claimed. SM89/default finite projection are the qualified target, not arbitrary
 GPU architectures or the paper's Blackwell 4K performance target.
+
+### Generic NR code assets
+
+`runtime/nr/sm89` contains eight content-addressed kernel packs, not image-size
+profiles. Their headers include source and CUBIN SHA256; GPU architecture is fixed
+to SM89 for this release, while spatial geometry remains runtime data.
+`D5_NR_KERNELS` can override this path; `D5_NR_EXPORT_KERNELS` is a development-only
+output directory for rebuilding packs after source changes. See
+`native/nr/kernels/README.md`. Keep these packs with the external runtime.

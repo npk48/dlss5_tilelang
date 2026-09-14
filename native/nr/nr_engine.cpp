@@ -1,7 +1,9 @@
 #include "nr_engine.h"
 #include "nr_layouts.h"
 #include "nr_weight_routes.h"
+#include "nr_kernel_pack.h"
 #include <cstring>
+#include <chrono>
 #include <fstream>
 #include <limits>
 #include <type_traits>
@@ -53,7 +55,8 @@ struct Storage
     CUcontext context;
     std::vector<CUdeviceptr> buffers;
     std::vector<CUmodule> modules;
-    explicit Storage(CUcontext c) : context(c)
+    AuditStats *audit = nullptr;
+    explicit Storage(CUcontext c, AuditStats *a = nullptr) : context(c), audit(a)
     {
     }
     ~Storage()
@@ -87,7 +90,10 @@ struct Storage
     CUdeviceptr upload(const void *data, size_t size)
     {
         auto p = allocate(size);
+        auto start = std::chrono::steady_clock::now();
         check(cuMemcpyHtoD(p, data, size));
+        if (audit) audit->upload_ms += std::chrono::duration<double, std::milli>(
+            std::chrono::steady_clock::now() - start).count();
         return p;
     }
     template <class T> CUdeviceptr upload(const std::vector<T> &v)
@@ -483,58 +489,37 @@ struct Weights
     }
 };
 
-struct State
+struct Geometry
 {
-    Shape shape;
+    int h, w, dh, dw, sh, pw, ph, dt, dp, mt;
+};
+static_assert(sizeof(Geometry) == 40);
+inline std::string geometry_source()
+{
+    return R"NRgeom(
+struct NRGeometry { int h,w,dh,dw,sh,pw,ph,dt,dp,mt; };
+extern "C" { __device__ __constant__ NRGeometry nr_geometry; }
+#define NR_H (nr_geometry.h)
+#define NR_W (nr_geometry.w)
+#define DH (nr_geometry.dh)
+#define DW (nr_geometry.dw)
+#define SH (nr_geometry.sh)
+#define PW (nr_geometry.pw)
+#define PH (nr_geometry.ph)
+#define DT (nr_geometry.dt)
+#define DP (nr_geometry.dp)
+#define MT (nr_geometry.mt)
+)NRgeom";
+}
+struct Modules
+{
     Storage mem;
     Compiler &compiler;
-    Weights &wt;
+    AuditStats &audit;
     std::map<std::string, CUmodule> mods;
-    std::map<std::string, std::string> headers;
-    std::vector<Step> enc, deep, dec;
-    Step clear{}, pre{}, post{};
-    U arena = 0, status = 0, completion_slab = 0;
-    size_t completion_count = 0;
-    int *host_status = nullptr;
-    std::map<std::string, I> offsets;
-    std::map<std::string, U> aux;
-    struct Patch
-    {
-        size_t step, arg;
-    };
-    std::vector<Patch> completion_patches;
-    explicit State(Shape s, CUcontext context, Compiler &c, Weights &w)
-        : shape(s), mem(context), compiler(c), wt(w)
-    {
-        try
-        {
-            build_outer();
-            build_deep();
-            completion_slab = mem.allocate(completion_count * 4);
-            for (const auto &p : completion_patches)
-            {
-                Completion v;
-                std::memcpy(&v, deep[p.step].args[p.arg].bytes.data(), sizeof(v));
-                for (int i = 0; i < v.count; ++i)
-                    v.regions[i].pointer += completion_slab;
-                deep[p.step].args[p.arg].set(v);
-            }
-            check(cuMemHostAlloc(reinterpret_cast<void **>(&host_status), sizeof(int), 0));
-            check(cuCtxSynchronize());
-        }
-        catch (...)
-        {
-            if (host_status)
-                cuMemFreeHost(host_status);
-            throw;
-        }
-    }
-    ~State()
-    {
-        if (host_status)
-            cuMemFreeHost(host_status);
-    }
-    CUmodule module(const std::string &name)
+    Modules(CUcontext c, Compiler &compiler, AuditStats &audit)
+        : mem(c), compiler(compiler), audit(audit) {}
+    CUmodule module(const std::string &name, const std::map<std::string, std::string> &headers)
     {
         auto it = mods.find(name);
         if (it != mods.end())
@@ -558,25 +543,34 @@ struct State
             src = source_bridge();
         else
             throw std::logic_error("Unknown NR module");
-        bool isdeep = name == "deep16" || name == "vit" || name == "bridge";
-        int h = shape.dh, w = shape.dw, ph = align(h, 8) / 2, pw = align(w, 8) / 2, t = ph * pw;
-        std::map<std::string, int> defines =
-            isdeep ? std::map<std::string, int>{{"DH", h},
-                                                {"DW", w},
-                                                {"SH", (h + 7) / 8},
-                                                {"PW", pw},
-                                                {"PH", ph},
-                                                {"DT", t},
-                                                {"DP", align(t, 128)},
-                                                {"MT", (t + 127) / 128}}
-                   : std::map<std::string, int>{{"NR_H", shape.h}, {"NR_W", shape.w}};
-        auto image = compiler.image(name + ".cu", src, defines,
-                                    isdeep ? std::map<std::string, std::string>{} : headers);
+        const std::string full_source=geometry_source()+src;
+        std::string signature="D5NRGEN1;sm_89;cpp17;device-default;";
+        auto part=[&](const std::string& value){signature+=std::to_string(value.size())+":"+value;};
+        part(name);part(full_source);for(const auto& h:headers){part(h.first);part(h.second);}
+        auto source_digest=digest(signature.data(),signature.size());
+        auto directory=environment_path(L"D5_NR_KERNELS");
+        if(directory.empty())directory=compiler.root.parent_path()/"nr"/"sm89";
+        auto start=std::chrono::steady_clock::now();
+        auto image=read_kernel_pack(kernel_pack_path(directory,name,source_digest),source_digest);
+        if(image.empty()) {
+            ++audit.nvrtc_compiles;
+            image=compiler.image(name+".cu",full_source,{},headers);
+            audit.compile_ms+=std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-start).count();
+        } else {
+            ++audit.kernel_pack_loads;
+            audit.kernel_pack_load_ms+=std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-start).count();
+        }
+        auto export_directory=environment_path(L"D5_NR_EXPORT_KERNELS");
+        if(!export_directory.empty())write_kernel_pack(kernel_pack_path(export_directory,name,source_digest),source_digest,image);
         CUmodule mod;
+        start = std::chrono::steady_clock::now();
         check(cuModuleLoadData(&mod, image.data()));
+        audit.module_load_ms += std::chrono::duration<double, std::milli>(
+            std::chrono::steady_clock::now() - start).count();
         try
         {
             mem.modules.push_back(mod);
+            ++audit.module_loads;
         }
         catch (...)
         {
@@ -586,11 +580,72 @@ struct State
         mods[name] = mod;
         return mod;
     }
+};
+struct State
+{
+    Shape shape;
+    Storage mem;
+    Modules &modules;
+    Weights &wt;
+    Geometry geometry{};
+    struct Binding { CUdeviceptr target; U pointer; };
+    std::vector<Binding> bindings;
+    std::vector<CUdeviceptr> geometry_targets;
+    bool active = false;
+    std::map<std::string, std::vector<RuntimeTable>> tables;
+    std::map<std::string, std::string> headers;
+    std::vector<Step> enc, deep, dec;
+    Step clear{}, pre{}, post{};
+    U arena = 0, status = 0, completion_slab = 0;
+    size_t completion_count = 0;
+    int *host_status = nullptr;
+    std::map<std::string, I> offsets;
+    std::map<std::string, U> aux;
+    struct Patch
+    {
+        size_t step, arg;
+    };
+    std::vector<Patch> completion_patches;
+    explicit State(Shape s, CUcontext context, Modules &m, Weights &w)
+        : shape(s), mem(context, &m.audit), modules(m), wt(w)
+    {
+        try
+        {
+            int ph = align(shape.dh, 8) / 2, pw = align(shape.dw, 8) / 2, t = ph * pw;
+            geometry = {shape.h, shape.w, shape.dh, shape.dw, (shape.dh + 7) / 8,
+                        pw, ph, t, align(t, 128), (t + 127) / 128};
+            build_outer();
+            build_deep();
+            completion_slab = mem.allocate(completion_count * 4);
+            for (const auto &p : completion_patches)
+            {
+                Completion v;
+                std::memcpy(&v, deep[p.step].args[p.arg].bytes.data(), sizeof(v));
+                for (int i = 0; i < v.count; ++i)
+                    v.regions[i].pointer += completion_slab;
+                deep[p.step].args[p.arg].set(v);
+            }
+            check(cuMemHostAlloc(reinterpret_cast<void **>(&host_status), sizeof(int), 0));
+            bind_geometry();
+            check(cuCtxSynchronize());
+        }
+        catch (...)
+        {
+            if (host_status)
+                cuMemFreeHost(host_status);
+            throw;
+        }
+    }
+    ~State()
+    {
+        if (host_status)
+            cuMemFreeHost(host_status);
+    }
     Step step(const std::string &unit, const std::string &name, Dim grid, Dim block,
               unsigned shared, Args args)
     {
         CUfunction f;
-        check(cuModuleGetFunction(&f, module(unit), name.c_str()));
+        check(cuModuleGetFunction(&f, modules.module(unit, headers), name.c_str()));
         return {f, grid, block, shared, std::move(args)};
     }
     U buffer(size_t bytes)
@@ -630,6 +685,38 @@ struct State
              {source, target, imap, omap, I(count), done ? completion(done) : Completion{}},
              done != 0);
     }
+    void bind_geometry()
+    {
+        for (auto &entry : modules.mods) {
+            CUdeviceptr target;
+            size_t bytes;
+            check(cuModuleGetGlobal(&target, &bytes, entry.second, "nr_geometry"));
+            if (bytes != sizeof(Geometry)) throw std::logic_error("NR geometry ABI");
+            geometry_targets.push_back(target);
+            for (const auto &group : tables) {
+                if (group.first != "addresses" && group.first != entry.first) continue;
+                for (const auto &table : group.second) {
+                    auto result = cuModuleGetGlobal(&target, &bytes, entry.second, table.name.c_str());
+                    if (result == CUDA_ERROR_NOT_FOUND) continue;
+                    check(result);
+                    if (bytes != sizeof(U)) throw std::logic_error("NR table pointer ABI");
+                    bindings.push_back({target, mem.upload(table.bytes)});
+                }
+            }
+        }
+        tables.clear();
+    }
+    void activate(CUstream stream)
+    {
+        if (active) return;
+        // Engine calls are serialized; infer synchronizes before returning. Each Engine
+        // owns distinct modules, so concurrent Engines cannot overwrite these constants.
+        for (auto target : geometry_targets)
+            check(cuMemcpyHtoDAsync(target, &geometry, sizeof(geometry), stream));
+        for (const auto &binding : bindings)
+            check(cuMemcpyHtoDAsync(binding.target, &binding.pointer, sizeof(binding.pointer), stream));
+        active = true;
+    }
     void build_outer();
     void build_deep();
 };
@@ -642,9 +729,9 @@ void State::build_outer()
         ds.emplace(v.first, pool_metadata(shape.outer(v.second)));
     for (auto v : {std::pair<int, int>{2, 62}, {4, 56}, {8, 48}})
         up.emplace(v.first, up_metadata(shape.outer(v.second)));
-    headers["routes4.cuh"] = routes(4, ds.at(4), up.at(4));
-    headers["routes8.cuh"] = routes(8, ds.at(8), up.at(8));
-    headers["addresses.cuh"] = addresses(shape, ds);
+    headers["routes4.cuh"] = routes(4, ds.at(4), up.at(4), tables["heads4"]);
+    headers["routes8.cuh"] = routes(8, ds.at(8), up.at(8), tables["heads8"]);
+    headers["addresses.cuh"] = addresses(ds, tables["addresses"]);
     size_t cursor = 0;
     auto reserve = [&](const std::string &name, size_t bytes) {
         cursor = (cursor + 255) / 256 * 256;
@@ -970,6 +1057,8 @@ struct Engine::Impl
     CUdevice device = 0;
     bool retained = false;
     std::unique_ptr<detail::Compiler> compiler;
+    AuditStats audit{};
+    std::unique_ptr<detail::Modules> modules;
     std::unique_ptr<detail::Weights> weights;
     std::unique_ptr<detail::State> state;
     Impl(const std::filesystem::path &dir, int ordinal)
@@ -998,11 +1087,13 @@ struct Engine::Impl
             if (primary != context)
                 throw std::runtime_error("NR requires primary CUDA context, not a private context");
             compiler = std::make_unique<Compiler>();
+            modules = std::make_unique<Modules>(context, *compiler, audit);
             weights = std::make_unique<Weights>(context, dir);
         }
         catch (...)
         {
             weights.reset();
+            modules.reset();
             compiler.reset();
             cuDevicePrimaryCtxRelease(device);
             retained = false;
@@ -1018,6 +1109,7 @@ struct Engine::Impl
             cuCtxSetCurrent(context);
             state.reset();
             weights.reset();
+            modules.reset();
             compiler.reset();
             cuCtxSetCurrent(old);
             cuDevicePrimaryCtxRelease(device);
@@ -1050,15 +1142,26 @@ Engine::Engine(const std::filesystem::path &dir, int device)
 {
 }
 Engine::~Engine() = default;
+AuditStats Engine::audit() const { return impl_->audit; }
 void Engine::prepare(int h, int w)
 {
     impl_->guard();
     detail::Shape shape(h, w);
     if (impl_->state && impl_->state->shape.h == h && impl_->state->shape.w == w)
         return;
+    auto start = std::chrono::steady_clock::now();
+    auto before = impl_->audit;
     auto state =
-        std::make_unique<detail::State>(shape, impl_->context, *impl_->compiler, *impl_->weights);
+        std::make_unique<detail::State>(shape, impl_->context, *impl_->modules, *impl_->weights);
     impl_->state = std::move(state);
+    ++impl_->audit.prepares;
+    impl_->audit.last_prepare_ms = std::chrono::duration<double, std::milli>(
+        std::chrono::steady_clock::now() - start).count();
+    impl_->audit.last_layout_allocation_ms = impl_->audit.last_prepare_ms -
+        (impl_->audit.compile_ms - before.compile_ms) -
+        (impl_->audit.module_load_ms - before.module_load_ms) -
+        (impl_->audit.upload_ms - before.upload_ms) -
+        (impl_->audit.kernel_pack_load_ms - before.kernel_pack_load_ms);
 }
 void Engine::infer(CUdeviceptr packet, CUdeviceptr head, int h, int w, CUstream stream)
 {
@@ -1088,6 +1191,7 @@ void Engine::infer(CUdeviceptr packet, CUdeviceptr head, int h, int w, CUstream 
     s->post.args[6].set(U(head));
     try
     {
+        s->activate(stream);
         s->clear.launch(stream);
         s->pre.launch(stream);
         for (auto &step : s->enc)
