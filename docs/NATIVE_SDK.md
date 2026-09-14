@@ -11,7 +11,7 @@ Python scripts only export ONNX models and compare against the reference.
 | NR | Original 71-layer CUDA graph, raw BIN parsing, runtime layout/weight setup | SM89; Float32 CHW16 packet -> HWC4 head; 64-aligned axes |
 | NR chain | CUDA packet/Gaussian/history warp/composition, independent state per pass | 1–30 passes; style, tone, structure, skin, automatic mask, temporal strength, intensity |
 | RAFT | ONNX Runtime CUDA, RAFT-small C_T_V2, device IOBinding | Dynamic spatial dimensions; exported update count (included: 8) |
-| VDA | Full Metric VDA Small FP32 init/step models, causal hidden-state history | Network spatial dimensions are exported offline; included default: 518×924 |
+| VDA | Full Metric VDA Small FP32 init/step models, causal hidden-state history | Dynamic network H/W and cache spatial dimensions; one init/step pair |
 | Guide | Native reference static/depth/consistency tests, optional luma test | Geometry fitting is not implemented; use a replacement stage |
 | FSR2 | Native default reference reconstruction, depth clip, reactive/composition, locks, accumulation | SDR only; standard finite, non-inverted depth projection |
 | Color/output | sRGB/linear709/nits/PQ2020 bridge, mix/protect/alpha, residual transport | HDR+FSR unsupported without replacement; resize/HDR are close, not bitwise parity |
@@ -24,7 +24,7 @@ size changes use explicit spatial bilinear resizing, not FSR2.
 ## Build
 
 Requirements: Windows x64, MSVC 2022 x64 tools, CMake/Ninja, CUDA Toolkit >=12.2,
-SM89 GPU and NVIDIA driver. Node.js 22+ and npm are frontend **build-time** dependencies only. `.toolchains/cuda12.8` provides runtime NR NVRTC
+SM89 GPU and NVIDIA driver. Node.js 22.12+ and npm are frontend **build-time** dependencies only. `.toolchains/cuda12.8` provides runtime NR NVRTC
 compilation. The native ONNX Runtime SDK and CUDA/cuDNN DLLs are staged under
 `native/third_party/ort`; see `native/guides/DEPENDENCIES.md`.
 
@@ -52,17 +52,33 @@ model/
   weights_ht_blob.bin
   native_guides/
     raft_small_u8.onnx
-    vda_small_518x924_init.onnx
-    vda_small_518x924_step.onnx
+    vda_small_dynamic_init.onnx
+    vda_small_dynamic_step.onnx
     native_guides.json
 ```
 
-VDA preprocessing chooses a network grid from input aspect ratio and input-size
-setting, following the reference. A different resulting grid needs its matching
-init/step ONNX pair. It is **not** silently stretched to 518×924. See
-`native/tools/export_guides.py --help` for offline export. The original `.pth`
-files are needed for export, not for native runtime. RAFT's update count is also
-part of the exported filename. Additional assets can coexist in this directory.
+VDA uses **the same dynamic init/step ONNX files for all supported source sizes and
+aspect ratios**. Native preprocessing derives an internal 14-pixel patch-aligned
+network grid from the source aspect ratio and depth input-size setting. The source
+image does not have to be aligned to 14 or 64; output defaults to the exact source
+size. Positional interpolation, decoder shapes and all eight cache spatial axes
+are dynamic. No per-size export or static-model fallback is used.
+
+The upload API accepts axes 32–16384 and at most 16 megapixels; CUDA memory and
+model preprocessing impose additional real limits. Normalization is not a promise
+that arbitrary NR work sizes fit available VRAM. Extremely elongated images retain at least one 14-pixel patch on the internal
+short side instead of rounding to zero. The long axis remains derived from aspect
+ratio, not a fixed preset.
+
+When source size changes, size-dependent histories and buffers are reset; the
+native dynamic estimator sessions and weights are retained on the same stream.
+Same-size sequential frames retain the original 32-frame causal cache policy.
+`native/package.ps1 -IncludeModels` copies the checked export manifest, requires
+the dynamic pair and removes retired fixed-grid VDA files from the deployment.
+
+See `native/tools/export_guides.py --help` for development-time export. Original
+PTH checkpoints are needed for export, not native runtime. RAFT has dynamic spatial
+dimensions but its recurrent update count is part of the export (included: u8).
 
 ## C ABI
 
@@ -243,9 +259,11 @@ Independent image jobs reset history. For ordered streaming, send the same
 `stream_id`, keep configuration/dimensions fixed, use `reset=true` on the first
 frame and `reset=false` thereafter. Submit frames in order; the GPU queue executes
 one job at a time. Up to four stream contexts and eight recent job results are
-retained. Changing shape/backend configuration recreates its SDK session; changes
-to structure/tone/style/skin/pass settings or mix use the live-control API instead
-of recompiling/reloading the model.
+retained. Changing backend/output configuration recreates its SDK session. Source-size
+changes use native preparation and reset spatial history without selecting a new
+VDA model or discarding estimator weights. Changes to structure/tone/style/skin/
+pass settings or mix use the live-control API. NR may still need shape-specific
+CUDA compilation when its neural work shape changes; this is not a VDA export requirement.
 
 Image HTTP necessarily uploads/downloads pixels; use the DLL for GPU-native
 integration. WIC handles PNG/JPEG/BMP and preserves RGBA in PNG output; only the

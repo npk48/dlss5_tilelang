@@ -1,0 +1,24 @@
+{
+  "source_hw": [
+    32,
+    4096
+  ],
+  "network_hw": [
+    14,
+    1792
+  ],
+  "native_depth_input_size": 518,
+  "reference_depth_input_size": 600,
+  "note": "Reference size600 produces the same14x1792 network grid; old size518 rounds to zero. New native minimum-one-patch rule is validated against the original model on that same grid.",
+  "frames": [
+    {
+      "frame": 0,
+      "max_abs": 2.0265579223632812e-05
+    },
+    {
+      "frame": 1,
+      "max_abs": 2.002716064453125e-05
+    }
+  ],
+  "native_transpose_and_restore_max_abs": 0
+}

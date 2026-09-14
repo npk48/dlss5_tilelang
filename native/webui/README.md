@@ -74,3 +74,7 @@ Override `D5_TEST_URL`, `D5_TEST_TOKEN` and `D5_TEST_OUTPUT` as needed. This tes
 uses real GPU inference (no mocks), checks authentication, source/result pairing,
 PNG/config downloads, wipe/zoom and mobile layout, and saves screenshots. Build
 output (`dist/`) and test artifacts are generated and ignored by Git.
+
+VDA now requires `vda_small_dynamic_init.onnx` and `vda_small_dynamic_step.onnx`,
+not a catalog of grid-specific files. The displayed 14-aligned grid is internal
+preprocessing geometry, not a supported-input-size list.

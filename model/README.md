@@ -12,5 +12,5 @@ The binary files are tracked through Git LFS. Run `git lfs pull` after cloning. 
 
 Native consumers use `weights_ht_blob.bin` and the exported ONNX files in
 `native_guides/` (also Git LFS). The original PTH checkpoints are needed for
-offline export, not native runtime. Included production VDA grid: 518x924.
-See `../docs/NATIVE_SDK.md` for other aspect ratios and exported update counts.
+offline export, not native runtime. VDA uses one dynamic-spatial init/step pair for different image sizes and aspect ratios.
+See `../docs/NATIVE_SDK.md` for dynamic spatial processing and exported RAFT update counts.

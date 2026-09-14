@@ -40,106 +40,78 @@
       "multiple": 8
     },
     {
-      "file": "vda_small_518x924_init.onnx",
-      "sha256": "712e0ab51f07fd1bd543c2877cabe7324d0cae9043c1ad5d6811a5b252048bdc",
-      "network_hw": [
-        518,
-        924
-      ],
-      "cache_shapes": [
-        [
-          2442,
-          1,
-          192
+      "file": "vda_small_dynamic_init.onnx",
+      "sha256": "2459cfe7080e6715cda47fc393155b6bb6a4840d2f90f28ab7e63b4d0142c745",
+      "dynamic_spatial": true,
+      "multiple": 14,
+      "precision": "float32",
+      "cache_contract": {
+        "layout": "[spatial,time,channels]",
+        "input_time": 31,
+        "output_time": 1,
+        "patch_h": "height/14",
+        "patch_w": "width/14",
+        "spatial": [
+          "patch_h*patch_w",
+          "patch_h*patch_w",
+          "ceil(patch_h/2)*ceil(patch_w/2)",
+          "ceil(patch_h/2)*ceil(patch_w/2)",
+          "patch_h*patch_w",
+          "patch_h*patch_w",
+          "4*patch_h*patch_w",
+          "4*patch_h*patch_w"
         ],
-        [
-          2442,
-          1,
-          192
-        ],
-        [
-          627,
-          1,
-          384
-        ],
-        [
-          627,
-          1,
-          384
-        ],
-        [
-          2442,
-          1,
+        "channels": [
+          192,
+          192,
+          384,
+          384,
+          64,
+          64,
+          64,
           64
         ],
-        [
-          2442,
-          1,
-          64
-        ],
-        [
-          9768,
-          1,
-          64
-        ],
-        [
-          9768,
-          1,
-          64
-        ]
-      ],
-      "precision": "float32"
+        "selection": "history[:2]+history[-29:]",
+        "initial_history": 32,
+        "eviction": "remove index 1 when zero_based_frame+32>42"
+      }
     },
     {
-      "file": "vda_small_518x924_step.onnx",
-      "sha256": "b87046f622eae6f291b2c234871f10ccd45746907547e06d0fe0490b69d6f440",
-      "network_hw": [
-        518,
-        924
-      ],
-      "cache_shapes": [
-        [
-          2442,
-          1,
-          192
+      "file": "vda_small_dynamic_step.onnx",
+      "sha256": "0f0e63bf37f8f6fde08f0446c87687dec14dc46094613a1f219d7b77570456a3",
+      "dynamic_spatial": true,
+      "multiple": 14,
+      "precision": "float32",
+      "cache_contract": {
+        "layout": "[spatial,time,channels]",
+        "input_time": 31,
+        "output_time": 1,
+        "patch_h": "height/14",
+        "patch_w": "width/14",
+        "spatial": [
+          "patch_h*patch_w",
+          "patch_h*patch_w",
+          "ceil(patch_h/2)*ceil(patch_w/2)",
+          "ceil(patch_h/2)*ceil(patch_w/2)",
+          "patch_h*patch_w",
+          "patch_h*patch_w",
+          "4*patch_h*patch_w",
+          "4*patch_h*patch_w"
         ],
-        [
-          2442,
-          1,
-          192
-        ],
-        [
-          627,
-          1,
-          384
-        ],
-        [
-          627,
-          1,
-          384
-        ],
-        [
-          2442,
-          1,
+        "channels": [
+          192,
+          192,
+          384,
+          384,
+          64,
+          64,
+          64,
           64
         ],
-        [
-          2442,
-          1,
-          64
-        ],
-        [
-          9768,
-          1,
-          64
-        ],
-        [
-          9768,
-          1,
-          64
-        ]
-      ],
-      "precision": "float32"
+        "selection": "history[:2]+history[-29:]",
+        "initial_history": 32,
+        "eviction": "remove index 1 when zero_based_frame+32>42"
+      }
     }
   ],
   "variant": "Metric Small experimental causal streaming, not offline VDA",

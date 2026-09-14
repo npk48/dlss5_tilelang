@@ -1,8 +1,8 @@
 """Development-only faithful ONNX export and native/reference validation.
 
-No Python is used by the delivered guides library. VDA exports specialize the
-network spatial shape because the reference DINO positional interpolation uses
-Python float/int scale factors. Source image sizes remain native/dynamic.
+No Python is used by the delivered guides library. Export-only adapters preserve
+symbolic VDA spatial geometry, DINO positional scale semantics and temporal caches.
+The original reference pipeline is not modified.
 """
 import argparse
 import hashlib
@@ -66,23 +66,42 @@ def export(args):
     if args.component in ('all', 'depth'):
         h, w = depth_network_size(args.height, args.width, args.depth_input_size)
         model = MetricVideoDepth(models['metric-video-depth-anything-small'][0], device='cpu', fp32=True)
-        graph = DepthGraph(model.network).eval()
+        from dynamic_vda_adapter import adapt
+        graph = DepthGraph(adapt(model.network)).eval()
         x = torch.zeros(1, 3, h, w)
         with torch.inference_mode():
             initial = graph(x)
         cache = tuple(v.repeat(1, 31, 1) for v in initial[1:])
         outputs = ['depth'] + [f'new_cache_{i}' for i in range(len(cache))]
         for label, inputs in [('init', (x,)), ('step', (x,) + cache)]:
-            path = dest / f'vda_small_{h}x{w}_{label}.onnx'
+            path = dest / f'vda_small_dynamic_{label}.onnx'
             names = ['rgb'] + ([f'cache_{i}' for i in range(len(cache))] if label == 'step' else [])
             torch.onnx.export(graph, inputs, str(path), opset_version=17,
-                              input_names=names, output_names=outputs, do_constant_folding=True)
+                              input_names=names, output_names=outputs, do_constant_folding=True,
+                              dynamic_axes={'rgb': {2: 'height', 3: 'width'},
+                                            'depth': {2: 'height', 3: 'width'},
+                                            **{n: {0: f'spatial_{i % 8}'} for i, n in enumerate(names[1:] + outputs[1:])}})
+            exported = onnx.load(str(path))
+            # Batch/time/channels are architectural constants, unlike spatial axes.
+            for value, eager in zip(exported.graph.output, initial):
+                for axis in ([0, 1] if value.name == 'depth' else [1, 2]):
+                    value.type.tensor_type.shape.dim[axis].dim_value = int(eager.shape[axis])
+            onnx.save(exported, str(path))
             onnx.checker.check_model(str(path))
-            records.append({'file': path.name, 'sha256': sha(path), 'network_hw': [h, w],
-                            'cache_shapes': [list(v.shape) for v in initial[1:]], 'precision': 'float32'})
+            records.append({'file': path.name, 'sha256': sha(path), 'dynamic_spatial': True,
+                            'multiple': 14, 'precision': 'float32',
+                            'cache_contract': {'layout': '[spatial,time,channels]', 'input_time': 31, 'output_time': 1,
+                                'patch_h': 'height/14', 'patch_w': 'width/14',
+                                'spatial': ['patch_h*patch_w']*2 + ['ceil(patch_h/2)*ceil(patch_w/2)']*2 +
+                                           ['patch_h*patch_w']*2 + ['4*patch_h*patch_w']*2,
+                                'channels': [int(v.shape[2]) for v in initial[1:]],
+                                'selection': 'history[:2]+history[-29:]',
+                                'initial_history': 32, 'eviction': 'remove index 1 when zero_based_frame+32>42'}})
             print('EXPORTED', path, flush=True)
     manifest = dest / 'native_guides.json'
     old = json.loads(manifest.read_text())['exports'] if manifest.exists() else []
+    if args.component in ('all', 'depth'):
+        old = [r for r in old if not r['file'].startswith('vda_small_')]
     keys = {r['file'] for r in records}
     manifest.write_text(json.dumps({'format': 1, 'reference': provenance,
         'exports': [r for r in old if r['file'] not in keys] + records,

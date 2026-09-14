@@ -52,8 +52,9 @@ int even_round(double x) {
 }
 std::pair<int,int> depth_hw(int h,int w,int size) {
     double ratio=double(std::max(h,w))/std::min(h,w);
-    if(ratio>1.78) size=even_round(int(size*1.777/ratio)/14.)*14;
-    if(size<14)throw std::invalid_argument("guides: aspect ratio too extreme for VDA preprocessing");
+    if(ratio>1.78) size=std::max(14,even_round(int(size*1.777/ratio)/14.)*14);
+    // Keep at least one patch instead of turning an extreme aspect ratio into
+    // a zero-sized tensor. Ordinary geometries retain reference preprocessing.
     double scale=std::max(double(size)/h,double(size)/w);
     auto multiple=[size](double x){int n=even_round(x/14.)*14;return n<size?int(std::ceil(x/14.))*14:n;};
     return {multiple(h*scale),multiple(w*scale)};
@@ -212,26 +213,53 @@ void Engine::estimate_depth(const float* current,int h,int w,float* depth,CUstre
     if(p.frames && (p.source_h!=h || p.source_w!=w))throw std::invalid_argument("guides: depth source size changed; reset required");
     try {
         if(!p.init_session) {
-            auto shape=depth_hw(h,w,p.config.depth_input_size);p.nh=shape.first;p.nw=shape.second;
-            std::string prefix="vda_small_"+std::to_string(p.nh)+"x"+std::to_string(p.nw);
+            std::string prefix="vda_small_dynamic";
             // Load BOTH before any state advances. A missing step is not usable VDA.
             auto init=p.load(prefix+"_init.onnx"),step=p.load(prefix+"_step.onnx");
             if(init->GetInputCount()!=1 || init->GetOutputCount()!=9 || step->GetInputCount()!=9 || step->GetOutputCount()!=9)
                 throw std::runtime_error("guides: VDA graph does not expose eight causal hidden states");
+            for(auto* session:{init.get(),step.get()}) {
+                auto rgb=session->GetInputTypeInfo(0).GetTensorTypeAndShapeInfo().GetShape();
+                auto depth=session->GetOutputTypeInfo(0).GetTensorTypeAndShapeInfo().GetShape();
+                if(rgb!=std::vector<int64_t>({1,3,-1,-1}) || depth.size()!=4 || depth[2]!=-1 || depth[3]!=-1)
+                    throw std::runtime_error("guides: VDA requires genuinely dynamic spatial graph signatures");
+                for(size_t i=0;i<8;++i) {
+                    auto shape=session->GetOutputTypeInfo(i+1).GetTensorTypeAndShapeInfo().GetShape();
+                    if(shape.size()!=3 || shape[0]!=-1 || shape[1]!=1 || shape[2]<=0)
+                        throw std::runtime_error("guides: invalid dynamic VDA output cache signature at "+std::to_string(i)+": "+
+                            (shape.size()==3?std::to_string(shape[0])+","+std::to_string(shape[1])+","+std::to_string(shape[2]):"rank"));
+                    if(session==step.get()) {
+                        auto input=session->GetInputTypeInfo(i+1).GetTensorTypeAndShapeInfo().GetShape();
+                        if(input!=std::vector<int64_t>({-1,31,shape[2]}))
+                            throw std::runtime_error("guides: invalid dynamic VDA input cache signature");
+                    }
+                }
+            }
             p.init_session=std::move(init);p.step_session=std::move(step);
-            Impl::ensure(p.depth_input,{1,3,p.nh,p.nw});Impl::ensure(p.depth_output,{1,1,p.nh,p.nw});
+        }
+        auto geometry=depth_hw(h,w,p.config.depth_input_size);
+        if(p.nh!=geometry.first || p.nw!=geometry.second) {
+            // A failed resize must not leave a partially populated cache marked
+            // as the requested geometry. Release old scratch first to bound peak VRAM.
+            p.nh=p.nw=0;p.depth_input.reset();p.depth_output.reset();p.packed.clear();
+            auto input=std::make_unique<Tensor>(std::vector<int64_t>{1,3,geometry.first,geometry.second});
+            auto output=std::make_unique<Tensor>(std::vector<int64_t>{1,1,geometry.first,geometry.second});
+            std::vector<std::unique_ptr<Tensor>> packed;
+            int64_t ph=geometry.first/14,pw=geometry.second/14;
             for(size_t i=0;i<8;++i) {
                 auto shape=p.step_session->GetInputTypeInfo(i+1).GetTensorTypeAndShapeInfo().GetShape();
-                if(shape.size()!=3 || shape[1]!=31)throw std::runtime_error("guides: invalid VDA cache input shape");
-                p.packed.emplace_back(std::make_unique<Tensor>(shape));
+                shape[0]=i<2?ph*pw:i<4?((ph+1)/2)*((pw+1)/2):i<6?ph*pw:4*ph*pw;
+                packed.emplace_back(std::make_unique<Tensor>(shape));
             }
+            p.depth_input=std::move(input);p.depth_output=std::move(output);p.packed=std::move(packed);
+            p.nh=geometry.first;p.nw=geometry.second;
         }
         bool first=p.frames==0;
         auto& session=first?*p.init_session:*p.step_session;
         auto next=std::make_shared<Frame>();
         for(size_t i=0;i<8;++i) {
-            auto shape=session.GetOutputTypeInfo(i+1).GetTensorTypeAndShapeInfo().GetShape();
-            if(shape.size()!=3 || shape[1]!=1)throw std::runtime_error("guides: invalid VDA new-cache shape");
+            auto shape=p.packed[i]->shape;
+            shape[1]=1;
             next->push_back(std::make_shared<Tensor>(shape));
         }
         Ort::IoBinding io(session);

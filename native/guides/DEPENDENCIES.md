@@ -73,16 +73,21 @@ Its output is an estimate in meters, not measured depth.
 - RAFT is dynamic in network H/W (multiples of 8, at least 128). The number of
   recurrent updates is baked into `raft_small_u8.onnx`; export another
   `--flow-updates N` for a different config. Current image is the first RAFT input.
-- VDA has exact **shape-specialized network graphs** `vda_small_HxW_init.onnx`
-  and `vda_small_HxW_step.onnx`. Both must exist. DINO's reference positional
-  interpolation and the temporal head use Python spatial float/int conversions;
-  declaring dynamic axes there would silently freeze parts of the graph. We do
-  not claim dynamic VDA network shapes. Export each desired shape offline with
-  `--component depth --height H --width W --depth-input-size S`.
-- Source image sizes are handled by native preprocessing and can differ from the
-  export example if they map to the same VDA network size. Defaults 360x640,
-  720x1280, 1080x1920 with depth input518 all map to **518x924**. Portrait and
-  other aspect ratios require corresponding exports. Missing shapes throw.
+- VDA uses exactly `vda_small_dynamic_init.onnx` and `vda_small_dynamic_step.onnx`
+  for all legal network geometries. Both are mandatory; there is no static fallback.
+  Export adapters retain shape-driven DINO cubic scales `(patch_axis+0.1)/37`,
+  with scale 1 at the exact 37x37 base grid, and symbolic temporal reshapes and
+  final DPT interpolation. Only the exporter model instances are adapted; the
+  original reference pipeline remains untouched.
+- Native preprocessing preserves ordinary reference aspect-aware patch14 rounding.
+  Source dimensions are not stretched to the export example. If an extreme aspect
+  ratio would round the short side to zero, it is kept at one patch (14), with the
+  long side still derived from aspect ratio. Native init/step and transpose/restore
+  were verified at a 14x1792 grid. CUDA allocation failures report memory limits.
+  With `ph=H/14,pw=W/14`,
+  cache spatial counts are `ph*pw` (0,1,4,5), `ceil(ph/2)*ceil(pw/2)` (2,3), and
+  `4*ph*pw` (6,7). Channels are 192,192,384,384,64,64,64,64; input time is31,
+  output time is1. The native loader rejects static spatial signatures.
 - Inputs/outputs: contiguous device float RGB HWC3 [0,1], HWC2 current-to-previous
   motion in **source pixels**, HWC1 metric depth. RAFT uses bilinear resize,
   bottom/right replicate padding, [-1,1] normalization, crop and vector scaling.
@@ -119,11 +124,14 @@ and missing assets, using a nonblocking nondefault CUDA stream. It prints loaded
 GPU DLL paths and rejects Python/Torch DLLs. This is numerical equivalence to the
 reference FP32 path, not a claim of FP16 bit equality or offline accuracy.
 
-`validation_summary.json` records the measured 13-frame results at both default
-and small work sizes. Optional `DLSS5_GUIDES_PROFILE_DIR` enables ORT profiling
-into an existing directory. On the tested default path, dynamic RAFT's nine ORT
-Memcpy nodes are **nine 4-byte host-to-device shape scalars**, not images; VDA
-init/step graphs contain no runtime Memcpy nodes.
+`C:/Python311/python.exe native/tools/dynamic_vda_validate.py` checks the same
+hashed universal pair at base-square, wide, portrait, odd source sizes and a
+34-frame sequence (including eviction). It writes `dynamic_vda_graph_evidence.json`
+and `dynamic_vda_comparison.json`. The verifier also tests `reset_history()` with
+transposed dimensions while retaining loaded sessions, and return to the original
+shape against the original bootstrap output. Optional `DLSS5_GUIDES_PROFILE_DIR`
+enables ORT profiling into an existing directory. Shape/control scalars may run
+on CPU; image/cache/output buffers remain CUDA IOBinding allocations.
 
 VDA source notices are preserved as `VDA_LICENSE` and `VDA_NOTICE`. Torchvision
 source is BSD-3-Clause; pretrained RAFT checkpoint/training-data rights require a

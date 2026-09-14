@@ -7,7 +7,8 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
-    "test:e2e": "node tests/studio-smoke.mjs"
+    "test:e2e": "node tests/studio-smoke.mjs",
+    "test:dynamic": "node tests/dynamic-sizes.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

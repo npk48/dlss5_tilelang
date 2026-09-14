@@ -73,9 +73,7 @@ struct D5SessionImpl {
   uint32_t newww=config.nr_width?config.nr_width:newow,newwh=config.nr_height?config.nr_height:newoh;
   if(iw==w&&ih==h&&ow==newow&&oh==newoh&&ww==newww&&wh==newwh){if(enabled(D5_STAGE_NR)&&!replacement(D5_STAGE_NR)){ensure_nr();nr->prepare((int)states[0]->neural_height(),(int)states[0]->neural_width());}return;}
   wait();invalidate();
-#ifdef D5_WITH_GUIDES
- estimators.reset();
-#endif
+ // Dynamic estimator graphs survive resize; invalidate() discards only history.
  iw=w;ih=h;ow=newow;oh=newoh;ww=newww;wh=newwh;
   source_context.alloc(iw,ih,3);encoded_source.alloc(iw,ih,3);previous_source.alloc(iw,ih,3);context_image.alloc(ow,oh,3);reference.alloc(ow,oh,3);modified.alloc(ow,oh,3);
   if(enabled(D5_STAGE_NR)){work.alloc(ww,wh,3);base.alloc(ww,wh,3);}depth.alloc(iw,ih,1);motion.alloc(iw,ih,2);confidence.alloc(ow,oh,1);normalized_depth.alloc(iw,ih,1);invalid_depth.alloc(iw,ih,1);guide_motion.alloc(iw,ih,2);dilated_motion.alloc(iw,ih,2);guide_distrust.alloc(iw,ih,1);fsr_input.alloc(iw,ih,3);reactive.alloc(iw,ih,1);combined_reactive.alloc(iw,ih,1);composition.alloc(iw,ih,1);current_alpha.alloc(iw,ih,1);previous_alpha.alloc(iw,ih,1);guide_state.allocate(iw,ih);fsr.reset();

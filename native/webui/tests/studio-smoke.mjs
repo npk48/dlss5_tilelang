@@ -7,6 +7,8 @@ import assert from 'node:assert/strict';
 const base = process.env.D5_TEST_URL || 'http://127.0.0.1:17864';
 const token = process.env.D5_TEST_TOKEN || 'studio-smoke-token';
 const out = path.resolve(process.env.D5_TEST_OUTPUT || 'test-results/studio');
+const inputWidth=Number(process.env.D5_TEST_WIDTH || 640), inputHeight=Number(process.env.D5_TEST_HEIGHT || 360);
+assert.ok(Number.isInteger(inputWidth)&&Number.isInteger(inputHeight)&&inputWidth>=32&&inputHeight>=32);
 await fs.mkdir(out, { recursive: true });
 const browser = await chromium.launch({ headless: true, ...(process.env.PLAYWRIGHT_CHANNEL ? { channel: process.env.PLAYWRIGHT_CHANNEL } : {}) });
 const page = await browser.newPage({ viewport: { width: 1440, height: 1100 }, acceptDownloads: true });
@@ -20,15 +22,15 @@ try {
   await page.getByLabel('Bearer token').fill(token);
   await page.getByRole('button', { name: 'Apply & reconnect' }).click();
   await page.getByRole('button', { name: 'Connected', exact: true }).waitFor({ timeout: 15000 });
-  const encoded = await page.evaluate(() => {
-    const c = document.createElement('canvas'); c.width = 640; c.height = 360;
-    const ctx = c.getContext('2d'); const pixels = ctx.createImageData(640, 360);
-    for (let y=0; y<360; y++) for (let x=0; x<640; x++) {
-      const i=(y*640+x)*4; pixels.data[i]=x*255/639; pixels.data[i+1]=y*255/359;
+  const encoded = await page.evaluate(({width,height}) => {
+    const c = document.createElement('canvas'); c.width = width; c.height = height;
+    const ctx = c.getContext('2d'); const pixels = ctx.createImageData(width, height);
+    for (let y=0; y<height; y++) for (let x=0; x<width; x++) {
+      const i=(y*width+x)*4; pixels.data[i]=x*255/(width-1); pixels.data[i+1]=y*255/(height-1);
       pixels.data[i+2]=80+35*Math.sin(x*.07); pixels.data[i+3]=255;
     }
     ctx.putImageData(pixels, 0, 0); return c.toDataURL('image/png').split(',')[1];
-  });
+  }, {width:inputWidth,height:inputHeight});
   await page.locator('input[type=file]').setInputFiles({ name:'studio-smoke.png', mimeType:'image/png', buffer:Buffer.from(encoded,'base64') });
   await page.getByRole('button', { name: 'Full pipeline', exact:true }).click();
   await page.getByRole('button', { name: 'Process image', exact:true }).click();
@@ -58,6 +60,15 @@ try {
   await page.setViewportSize({ width:390, height:844 });
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth+2), 'Mobile page overflows horizontally');
   await page.screenshot({ path:path.join(out,'mobile.png'), fullPage:true });
+  let sequenceJob;
+  if(process.env.D5_TEST_SEQUENCE==='1'){
+    const headers={Authorization:`Bearer ${token}`};
+    const response=await page.request.post(`${base}/v1/jobs`,{headers,multipart:{image:{name:'next-frame.png',mimeType:'image/png',buffer:Buffer.from(encoded,'base64')},config:JSON.stringify({...job.config,reset:false})}});
+    assert.equal(response.status(),202);const id=(await response.json()).id;
+    for(let i=0;i<240;i++){sequenceJob=await(await page.request.get(`${base}/v1/jobs/${id}`,{headers})).json();if(sequenceJob.status==='completed'||sequenceJob.status==='failed')break;await new Promise(r=>setTimeout(r,500));}
+    assert.equal(sequenceJob.status,'completed',sequenceJob.error);assert.equal(sequenceJob.metrics.frame,1,'Second frame did not use the causal step model');
+    assert.equal(sequenceJob.metrics.width,inputWidth);assert.equal(sequenceJob.metrics.height,inputHeight);
+  }
   // Pixel correctness as well as HTTP/UI success: disabled processing is identity.
   const auth={Authorization:`Bearer ${token}`};
   const identitySubmission=await page.request.post(`${base}/v1/jobs`,{headers:auth,multipart:{image:{name:'identity.png',mimeType:'image/png',buffer:Buffer.from(encoded,'base64')},config:JSON.stringify({nr:false,mix:0})}});
@@ -71,6 +82,6 @@ try {
   },[encoded,identityPng.toString('base64')]);
   assert.equal(maxPixelError,0,'Identity processing changed RGB/alpha pixels');
   assert.deepEqual(errors,[]);
-  await fs.writeFile(path.join(out,'report.json'),JSON.stringify({ base,job,checks:['public static assets','protected APIs','token connection','upload','full GPU pipeline','source/result pairing','PNG download','effective config download','wipe slider','zoom','mobile layout','no browser exceptions','HTTP PNG identity is pixel-exact'] },null,2));
+  await fs.writeFile(path.join(out,'report.json'),JSON.stringify({ base,inputWidth,inputHeight,job,sequenceJob,checks:['public static assets','protected APIs','token connection','upload','full GPU pipeline','source/result pairing','PNG download','effective config download','wipe slider','zoom','mobile layout','no browser exceptions','HTTP PNG identity is pixel-exact'] },null,2));
   console.log(JSON.stringify({ result:'PASS',job:job.id,output:out,metrics:job.metrics }));
 } catch(e) { await page.screenshot({path:path.join(out,'failure.png'),fullPage:true}).catch(()=>{}); throw e; } finally { await browser.close(); }

@@ -42,19 +42,35 @@ if(Test-Path "$dest/native-sdk/.toolchains"){Remove-Item "$dest/native-sdk/.tool
 if($IncludeModels){
  New-Item -ItemType Directory -Force "$dest/model/native_guides" | Out-Null
  Copy-Item "$repo/model/weights_ht_blob.bin" "$dest/model" -Force
- Copy-Item "$repo/model/native_guides/raft_small_u8.onnx","$repo/model/native_guides/vda_small_518x924_init.onnx","$repo/model/native_guides/vda_small_518x924_step.onnx","$repo/model/native_guides/native_guides.json" "$dest/model/native_guides" -Force
+ # Use the export manifest, not a hard-coded wide-screen model list.
+ $manifestPath="$repo/model/native_guides/native_guides.json"
+ $manifest=Get-Content $manifestPath -Raw | ConvertFrom-Json
+ foreach($name in @('vda_small_dynamic_init.onnx','vda_small_dynamic_step.onnx')){
+  if($name -notin $manifest.exports.file){throw "Dynamic VDA manifest entry required: $name"}
+ }
+ foreach($asset in $manifest.exports){
+  if($asset.file -match '^vda_small_\d+x\d+_'){throw "Static VDA export is not a supported distribution asset: $($asset.file)"}
+  if([IO.Path]::GetFileName($asset.file) -ne $asset.file -or [IO.Path]::GetExtension($asset.file) -ne '.onnx'){throw "Invalid model filename: $($asset.file)"}
+  $source=Join-Path "$repo/model/native_guides" $asset.file
+  if(!(Test-Path $source)){throw "Missing exported model: $source"}
+  if((Get-FileHash $source -Algorithm SHA256).Hash -ne $asset.sha256){throw "Model hash mismatch: $source"}
+  Copy-Item $source "$dest/model/native_guides" -Force
+ }
+ Copy-Item $manifestPath "$dest/model/native_guides/native_guides.json" -Force
+ Get-ChildItem "$dest/model/native_guides" -File | Where-Object { $_.Name -match '^vda_small_\d+x\d+_(init|step)\.onnx$' } | Remove-Item -Force
 }
 @'
 Server: dlss5_server.exe --port 7863
 Keep runtime/, model/ and assets/ next to the EXE. No dependency extraction/cache.
 Optional overrides: --runtime PATH --model PATH --assets PATH.
+VDA uses one dynamic init/step model pair, not per-size exports.
 SDK: register runtime/bin with AddDllDirectory before estimator use;
 set NATIVE_NR_TOOLCHAIN to runtime/cuda12.8 before NR preparation.
 Link native-sdk/lib/dlss5.lib and include native-sdk/include/dlss5.h.
 The packaged consumer detects this shared runtime layout automatically.
-See README.md for GPU target, exported VDA grids and callback contracts.
+See README.md for GPU/input limits and callback contracts.
 '@ | Set-Content "$dest/START.txt" -Encoding UTF8
 Get-FileHash "$dest/dlss5_server.exe","$bin/dlss5.dll","$lib/dlss5.lib" -Algorithm SHA256 | Format-List | Out-File "$dest/SHA256.txt"
 $commit=(& git -C $repo rev-parse HEAD).Trim()
-@{commit=$commit;layout='external-assets-v2';server='dlss5_server.exe';runtime='runtime';models='model';web_assets='assets';dependency_extraction=$false;python_runtime=$false} | ConvertTo-Json | Set-Content "$dest/BUILD.json" -Encoding UTF8
+@{commit=$commit;layout='external-assets-dynamic-vda-v3';server='dlss5_server.exe';runtime='runtime';models='model';web_assets='assets';vda_spatial_mode='dynamic';dependency_extraction=$false;python_runtime=$false} | ConvertTo-Json | Set-Content "$dest/BUILD.json" -Encoding UTF8
 Write-Host "Native external-asset delivery: $dest"

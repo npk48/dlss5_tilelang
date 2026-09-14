@@ -102,6 +102,17 @@ int main(int argc,char** argv) {
                 if(engine.depth_frames()!=0)throw std::runtime_error("reset frame counter");
                 engine.estimate_depth(current.p,h,w,depth.p,reinterpret_cast<CUstream>(stream));
                 same(first_depth,download(depth.p,pixels,stream),"reset_bootstrap");
+                engine.reset_history();
+                engine.estimate_depth(current.p,w,h,depth.p,reinterpret_cast<CUstream>(stream));
+                auto resized=download(depth.p,pixels,stream);
+                {
+                    Config dc=config;dc.flow=false;Engine independent(models.u8string(),0,dc);
+                    independent.estimate_depth(current.p,w,h,depth.p,reinterpret_cast<CUstream>(stream));
+                    same(resized,download(depth.p,pixels,stream),"retained_session_size_change");
+                }
+                engine.reset_history();
+                engine.estimate_depth(current.p,h,w,depth.p,reinterpret_cast<CUstream>(stream));
+                same(first_depth,download(depth.p,pixels,stream),"retained_session_restore_size");
             }
             Config disabled=config;disabled.flow=disabled.depth=false;Engine off(models.u8string(),0,disabled);
             must_throw("disabled flow",[&]{off.estimate_flow(current.p,previous.p,h,w,motion.p,reinterpret_cast<CUstream>(stream));});

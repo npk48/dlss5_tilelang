@@ -1,0 +1,2657 @@
+{
+  "graphs": [
+    {
+      "file": "vda_small_dynamic_init.onnx",
+      "sha256": "2459cfe7080e6715cda47fc393155b6bb6a4840d2f90f28ab7e63b4d0142c745",
+      "signatures": {
+        "rgb": [
+          1,
+          3,
+          "height",
+          "width"
+        ],
+        "depth": [
+          1,
+          1,
+          "height",
+          "width"
+        ],
+        "new_cache_0": [
+          "spatial_0",
+          1,
+          192
+        ],
+        "new_cache_1": [
+          "spatial_1",
+          1,
+          192
+        ],
+        "new_cache_2": [
+          "spatial_2",
+          1,
+          384
+        ],
+        "new_cache_3": [
+          "spatial_3",
+          1,
+          384
+        ],
+        "new_cache_4": [
+          "spatial_4",
+          1,
+          64
+        ],
+        "new_cache_5": [
+          "spatial_5",
+          1,
+          64
+        ],
+        "new_cache_6": [
+          "spatial_6",
+          1,
+          64
+        ],
+        "new_cache_7": [
+          "spatial_7",
+          1,
+          64
+        ]
+      },
+      "positional_resize_scale_ancestors": [
+        "Add",
+        "Cast",
+        "Concat",
+        "Constant",
+        "Div",
+        "Equal",
+        "Gather",
+        "Greater",
+        "Not",
+        "ReduceSum",
+        "Shape",
+        "Unsqueeze",
+        "Where",
+        "rgb"
+      ],
+      "spatial_operations": [
+        {
+          "node": "/network/patch_embed/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/Reshape",
+          "op": "Reshape",
+          "shape_driven": false,
+          "rgb_dependent": false,
+          "constant_controls": [
+            [
+              -1
+            ]
+          ],
+          "reason": "inferred/copy axes or architectural group count"
+        },
+        {
+          "node": "/network/Resize",
+          "op": "Resize",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": false,
+          "rgb_dependent": false,
+          "constant_controls": [
+            [
+              1,
+              -1,
+              384
+            ]
+          ],
+          "reason": "inferred/copy axes or architectural group count"
+        },
+        {
+          "node": "/network/blocks.0/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.0/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.1/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.1/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.2/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.2/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.3/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.3/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.4/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.4/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.5/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.5/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.6/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.6/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.7/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.7/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.8/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.8/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.9/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.9/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.10/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.10/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.11/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.11/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/Reshape_2",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/Reshape_3",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/norm/Reshape",
+          "op": "Reshape",
+          "shape_driven": false,
+          "rgb_dependent": false,
+          "constant_controls": [
+            [
+              0,
+              32,
+              -1
+            ]
+          ],
+          "reason": "inferred/copy axes or architectural group count"
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/norm/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_2",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_3",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_4",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_5",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_6",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_7",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_8",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_9",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_10",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_11",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_2",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_3",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_4",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_5",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_6",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_7",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_8",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_9",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_10",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_11",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/norm/Reshape",
+          "op": "Reshape",
+          "shape_driven": false,
+          "rgb_dependent": false,
+          "constant_controls": [
+            [
+              0,
+              32,
+              -1
+            ]
+          ],
+          "reason": "inferred/copy axes or architectural group count"
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/norm/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_2",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_3",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_4",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_5",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_6",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_7",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_8",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_9",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_10",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_11",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_2",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_3",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_4",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_5",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_6",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_7",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_8",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_9",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_10",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_11",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/refinenet4/Resize",
+          "op": "Resize",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/norm/Reshape",
+          "op": "Reshape",
+          "shape_driven": false,
+          "rgb_dependent": false,
+          "constant_controls": [
+            [
+              0,
+              32,
+              -1
+            ]
+          ],
+          "reason": "inferred/copy axes or architectural group count"
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/norm/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_2",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_3",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_4",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_5",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_6",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_7",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_8",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_9",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_10",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_11",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_2",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_3",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_4",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_5",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_6",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_7",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_8",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_9",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_10",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_11",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/refinenet3/Resize",
+          "op": "Resize",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/norm/Reshape",
+          "op": "Reshape",
+          "shape_driven": false,
+          "rgb_dependent": false,
+          "constant_controls": [
+            [
+              0,
+              32,
+              -1
+            ]
+          ],
+          "reason": "inferred/copy axes or architectural group count"
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/norm/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_2",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_3",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_4",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_5",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_6",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_7",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_8",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_9",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_10",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_11",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_2",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_3",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_4",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_5",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_6",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_7",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_8",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_9",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_10",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_11",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/refinenet2/Resize",
+          "op": "Resize",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/refinenet1/Resize",
+          "op": "Resize",
+          "shape_driven": false,
+          "rgb_dependent": false,
+          "constant_controls": [
+            [
+              1,
+              1,
+              2,
+              2
+            ]
+          ],
+          "reason": "relative 2x resize, not fixed spatial size"
+        },
+        {
+          "node": "/network/head/Resize",
+          "op": "Resize",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/Resize_1",
+          "op": "Resize",
+          "shape_driven": true,
+          "rgb_dependent": true
+        }
+      ]
+    },
+    {
+      "file": "vda_small_dynamic_step.onnx",
+      "sha256": "0f0e63bf37f8f6fde08f0446c87687dec14dc46094613a1f219d7b77570456a3",
+      "signatures": {
+        "rgb": [
+          1,
+          3,
+          "height",
+          "width"
+        ],
+        "cache_0": [
+          "spatial_0",
+          31,
+          192
+        ],
+        "cache_1": [
+          "spatial_1",
+          31,
+          192
+        ],
+        "cache_2": [
+          "spatial_2",
+          31,
+          384
+        ],
+        "cache_3": [
+          "spatial_3",
+          31,
+          384
+        ],
+        "cache_4": [
+          "spatial_4",
+          31,
+          64
+        ],
+        "cache_5": [
+          "spatial_5",
+          31,
+          64
+        ],
+        "cache_6": [
+          "spatial_6",
+          31,
+          64
+        ],
+        "cache_7": [
+          "spatial_7",
+          31,
+          64
+        ],
+        "depth": [
+          1,
+          1,
+          "height",
+          "width"
+        ],
+        "new_cache_0": [
+          "spatial_0",
+          1,
+          192
+        ],
+        "new_cache_1": [
+          "spatial_1",
+          1,
+          192
+        ],
+        "new_cache_2": [
+          "spatial_2",
+          1,
+          384
+        ],
+        "new_cache_3": [
+          "spatial_3",
+          1,
+          384
+        ],
+        "new_cache_4": [
+          "spatial_4",
+          1,
+          64
+        ],
+        "new_cache_5": [
+          "spatial_5",
+          1,
+          64
+        ],
+        "new_cache_6": [
+          "spatial_6",
+          1,
+          64
+        ],
+        "new_cache_7": [
+          "spatial_7",
+          1,
+          64
+        ]
+      },
+      "positional_resize_scale_ancestors": [
+        "Add",
+        "Cast",
+        "Concat",
+        "Constant",
+        "Div",
+        "Equal",
+        "Gather",
+        "Greater",
+        "Not",
+        "ReduceSum",
+        "Shape",
+        "Unsqueeze",
+        "Where",
+        "rgb"
+      ],
+      "spatial_operations": [
+        {
+          "node": "/network/patch_embed/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/Reshape",
+          "op": "Reshape",
+          "shape_driven": false,
+          "rgb_dependent": false,
+          "constant_controls": [
+            [
+              -1
+            ]
+          ],
+          "reason": "inferred/copy axes or architectural group count"
+        },
+        {
+          "node": "/network/Resize",
+          "op": "Resize",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": false,
+          "rgb_dependent": false,
+          "constant_controls": [
+            [
+              1,
+              -1,
+              384
+            ]
+          ],
+          "reason": "inferred/copy axes or architectural group count"
+        },
+        {
+          "node": "/network/blocks.0/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.0/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.1/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.1/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.2/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.2/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.3/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.3/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.4/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.4/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.5/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.5/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.6/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.6/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.7/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.7/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.8/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.8/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.9/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.9/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.10/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.10/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.11/attn/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/blocks.11/attn/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/Reshape_2",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/Reshape_3",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/norm/Reshape",
+          "op": "Reshape",
+          "shape_driven": false,
+          "rgb_dependent": false,
+          "constant_controls": [
+            [
+              0,
+              32,
+              -1
+            ]
+          ],
+          "reason": "inferred/copy axes or architectural group count"
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/norm/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_2",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_3",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_4",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_5",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_6",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_7",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_8",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_9",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_10",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_11",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_2",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_3",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_4",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_5",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_6",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_7",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_8",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_9",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_10",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_11",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.0/temporal_transformer/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/norm/Reshape",
+          "op": "Reshape",
+          "shape_driven": false,
+          "rgb_dependent": false,
+          "constant_controls": [
+            [
+              0,
+              32,
+              -1
+            ]
+          ],
+          "reason": "inferred/copy axes or architectural group count"
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/norm/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_2",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_3",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_4",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_5",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_6",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_7",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_8",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_9",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_10",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_11",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_2",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_3",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_4",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_5",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_6",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_7",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_8",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_9",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_10",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_11",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.1/temporal_transformer/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/refinenet4/Resize",
+          "op": "Resize",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/norm/Reshape",
+          "op": "Reshape",
+          "shape_driven": false,
+          "rgb_dependent": false,
+          "constant_controls": [
+            [
+              0,
+              32,
+              -1
+            ]
+          ],
+          "reason": "inferred/copy axes or architectural group count"
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/norm/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_2",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_3",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_4",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_5",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_6",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_7",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_8",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_9",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_10",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_11",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_2",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_3",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_4",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_5",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_6",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_7",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_8",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_9",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_10",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_11",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.2/temporal_transformer/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/refinenet3/Resize",
+          "op": "Resize",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/norm/Reshape",
+          "op": "Reshape",
+          "shape_driven": false,
+          "rgb_dependent": false,
+          "constant_controls": [
+            [
+              0,
+              32,
+              -1
+            ]
+          ],
+          "reason": "inferred/copy axes or architectural group count"
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/norm/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_2",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_3",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_4",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_5",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_6",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_7",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_8",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_9",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_10",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.0/Reshape_11",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_2",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_3",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_4",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_5",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_6",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_7",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_8",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_9",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_10",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/transformer_blocks.0/attention_blocks.1/Reshape_11",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/motion_modules.3/temporal_transformer/Reshape_1",
+          "op": "Reshape",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/refinenet2/Resize",
+          "op": "Resize",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/head/refinenet1/Resize",
+          "op": "Resize",
+          "shape_driven": false,
+          "rgb_dependent": false,
+          "constant_controls": [
+            [
+              1,
+              1,
+              2,
+              2
+            ]
+          ],
+          "reason": "relative 2x resize, not fixed spatial size"
+        },
+        {
+          "node": "/network/head/Resize",
+          "op": "Resize",
+          "shape_driven": true,
+          "rgb_dependent": true
+        },
+        {
+          "node": "/network/Resize_1",
+          "op": "Resize",
+          "shape_driven": true,
+          "rgb_dependent": true
+        }
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "source_hw": [
+        512,
+        512
+      ],
+      "depth_network_hw": [
+        518,
+        518
+      ],
+      "frames": 2,
+      "flow_updates": 8,
+      "component": "depth",
+      "reference_precision": "fp32",
+      "native_stdout": "NATIVE frame 0\nNATIVE frame 1\nEXPECTED source size change: guides: depth source size changed; reset required\nindependent_state max_abs=0\nreset_bootstrap max_abs=0\nretained_session_size_change max_abs=0\nretained_session_restore_size max_abs=0\nEXPECTED disabled flow: guides unavailable: flow component disabled\nEXPECTED disabled depth: guides unavailable: depth component disabled\nEXPECTED missing VDA asset: guides unavailable: missing C:\\work\\dlss5_remake\\model\\native_guides\\validation_512x512_d518\\empty_models\\vda_small_dynamic_init.onnx; export this model/configuration offline with native/tools/export_guides.py\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\onnxruntime.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\onnxruntime_providers_cuda.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\cudnn64_9.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\cublas64_12.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\cufft64_11.dll\nPASS native stream/state/error checks\n",
+      "results": [
+        {
+          "component": "depth",
+          "frame": 0,
+          "mae": 4.4300486479187384e-7,
+          "max_abs": 0.0000030994415283203125,
+          "reference_mean": 2.348254680633545,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 1,
+          "mae": 5.184701876714826e-7,
+          "max_abs": 0.0000035762786865234375,
+          "reference_mean": 2.612908124923706,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "source_hw": [
+        371,
+        533
+      ],
+      "depth_network_hw": [
+        518,
+        742
+      ],
+      "frames": 2,
+      "flow_updates": 8,
+      "component": "depth",
+      "reference_precision": "fp32",
+      "native_stdout": "NATIVE frame 0\nNATIVE frame 1\nEXPECTED source size change: guides: depth source size changed; reset required\nindependent_state max_abs=0\nreset_bootstrap max_abs=0\nretained_session_size_change max_abs=0\nretained_session_restore_size max_abs=0\nEXPECTED disabled flow: guides unavailable: flow component disabled\nEXPECTED disabled depth: guides unavailable: depth component disabled\nEXPECTED missing VDA asset: guides unavailable: missing C:\\work\\dlss5_remake\\model\\native_guides\\validation_371x533_d518\\empty_models\\vda_small_dynamic_init.onnx; export this model/configuration offline with native/tools/export_guides.py\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\onnxruntime.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\onnxruntime_providers_cuda.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\cudnn64_9.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\cublas64_12.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\cufft64_11.dll\nPASS native stream/state/error checks\n",
+      "results": [
+        {
+          "component": "depth",
+          "frame": 0,
+          "mae": 9.798602604860207e-7,
+          "max_abs": 0.000004291534423828125,
+          "reference_mean": 2.2329108715057373,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 1,
+          "mae": 0.000002041307197941933,
+          "max_abs": 0.000005245208740234375,
+          "reference_mean": 2.34733247756958,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "source_hw": [
+        533,
+        371
+      ],
+      "depth_network_hw": [
+        742,
+        518
+      ],
+      "frames": 2,
+      "flow_updates": 8,
+      "component": "depth",
+      "reference_precision": "fp32",
+      "native_stdout": "NATIVE frame 0\nNATIVE frame 1\nEXPECTED source size change: guides: depth source size changed; reset required\nindependent_state max_abs=0\nreset_bootstrap max_abs=0\nretained_session_size_change max_abs=0\nretained_session_restore_size max_abs=0\nEXPECTED disabled flow: guides unavailable: flow component disabled\nEXPECTED disabled depth: guides unavailable: depth component disabled\nEXPECTED missing VDA asset: guides unavailable: missing C:\\work\\dlss5_remake\\model\\native_guides\\validation_533x371_d518\\empty_models\\vda_small_dynamic_init.onnx; export this model/configuration offline with native/tools/export_guides.py\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\onnxruntime.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\onnxruntime_providers_cuda.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\cudnn64_9.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\cublas64_12.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\cufft64_11.dll\nPASS native stream/state/error checks\n",
+      "results": [
+        {
+          "component": "depth",
+          "frame": 0,
+          "mae": 5.635052389152406e-7,
+          "max_abs": 0.000004291534423828125,
+          "reference_mean": 2.048370838165283,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 1,
+          "mae": 6.663851195298776e-7,
+          "max_abs": 0.0000027418136596679688,
+          "reference_mean": 2.0150952339172363,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "source_hw": [
+        237,
+        419
+      ],
+      "depth_network_hw": [
+        518,
+        910
+      ],
+      "frames": 2,
+      "flow_updates": 8,
+      "component": "depth",
+      "reference_precision": "fp32",
+      "native_stdout": "NATIVE frame 0\nNATIVE frame 1\nEXPECTED source size change: guides: depth source size changed; reset required\nindependent_state max_abs=0\nreset_bootstrap max_abs=0\nretained_session_size_change max_abs=0\nretained_session_restore_size max_abs=0\nEXPECTED disabled flow: guides unavailable: flow component disabled\nEXPECTED disabled depth: guides unavailable: depth component disabled\nEXPECTED missing VDA asset: guides unavailable: missing C:\\work\\dlss5_remake\\model\\native_guides\\validation_237x419_d518\\empty_models\\vda_small_dynamic_init.onnx; export this model/configuration offline with native/tools/export_guides.py\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\onnxruntime.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\onnxruntime_providers_cuda.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\cudnn64_9.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\cublas64_12.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\cufft64_11.dll\nPASS native stream/state/error checks\n",
+      "results": [
+        {
+          "component": "depth",
+          "frame": 0,
+          "mae": 4.2921010390273295e-7,
+          "max_abs": 0.000014662742614746094,
+          "reference_mean": 1.9483712911605835,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 1,
+          "mae": 9.669910241427715e-7,
+          "max_abs": 0.000022292137145996094,
+          "reference_mean": 2.005317211151123,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "source_hw": [
+        99,
+        143
+      ],
+      "depth_network_hw": [
+        98,
+        140
+      ],
+      "frames": 34,
+      "flow_updates": 8,
+      "component": "depth",
+      "reference_precision": "fp32",
+      "native_stdout": "NATIVE frame 0\nNATIVE frame 1\nNATIVE frame 2\nNATIVE frame 3\nNATIVE frame 4\nNATIVE frame 5\nNATIVE frame 6\nNATIVE frame 7\nNATIVE frame 8\nNATIVE frame 9\nNATIVE frame 10\nNATIVE frame 11\nNATIVE frame 12\nNATIVE frame 13\nNATIVE frame 14\nNATIVE frame 15\nNATIVE frame 16\nNATIVE frame 17\nNATIVE frame 18\nNATIVE frame 19\nNATIVE frame 20\nNATIVE frame 21\nNATIVE frame 22\nNATIVE frame 23\nNATIVE frame 24\nNATIVE frame 25\nNATIVE frame 26\nNATIVE frame 27\nNATIVE frame 28\nNATIVE frame 29\nNATIVE frame 30\nNATIVE frame 31\nNATIVE frame 32\nNATIVE frame 33\nEXPECTED source size change: guides: depth source size changed; reset required\nindependent_state max_abs=0\nreset_bootstrap max_abs=0\nretained_session_size_change max_abs=0\nretained_session_restore_size max_abs=0\nEXPECTED disabled flow: guides unavailable: flow component disabled\nEXPECTED disabled depth: guides unavailable: depth component disabled\nEXPECTED missing VDA asset: guides unavailable: missing C:\\work\\dlss5_remake\\model\\native_guides\\validation_99x143_d98\\empty_models\\vda_small_dynamic_init.onnx; export this model/configuration offline with native/tools/export_guides.py\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\onnxruntime.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\onnxruntime_providers_cuda.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\cudnn64_9.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\cublas64_12.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\cufft64_11.dll\nPASS native stream/state/error checks\n",
+      "results": [
+        {
+          "component": "depth",
+          "frame": 0,
+          "mae": 3.325768318518385e-7,
+          "max_abs": 0.0000054836273193359375,
+          "reference_mean": 2.3576769828796387,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 1,
+          "mae": 6.118180522207695e-7,
+          "max_abs": 0.000012636184692382812,
+          "reference_mean": 2.4066905975341797,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 2,
+          "mae": 5.197817927182768e-7,
+          "max_abs": 0.000009775161743164062,
+          "reference_mean": 2.4143524169921875,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 3,
+          "mae": 6.57608836718282e-7,
+          "max_abs": 0.000013113021850585938,
+          "reference_mean": 2.4181389808654785,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 4,
+          "mae": 4.158389117492334e-7,
+          "max_abs": 0.000014543533325195312,
+          "reference_mean": 2.441408634185791,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 5,
+          "mae": 8.190302196453558e-7,
+          "max_abs": 0.000012636184692382812,
+          "reference_mean": 2.4643917083740234,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 6,
+          "mae": 0.0000013397551583693712,
+          "max_abs": 0.000013828277587890625,
+          "reference_mean": 2.468235969543457,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 7,
+          "mae": 4.6600837322330335e-7,
+          "max_abs": 0.000010728836059570312,
+          "reference_mean": 2.462830066680908,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 8,
+          "mae": 3.8013592984498246e-7,
+          "max_abs": 0.0000133514404296875,
+          "reference_mean": 2.4364120960235596,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 9,
+          "mae": 4.5565113282464154e-7,
+          "max_abs": 0.000010728836059570312,
+          "reference_mean": 2.4148659706115723,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 10,
+          "mae": 3.2444259545627574e-7,
+          "max_abs": 0.00000762939453125,
+          "reference_mean": 2.398179531097412,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 11,
+          "mae": 4.283686507733364e-7,
+          "max_abs": 0.000009059906005859375,
+          "reference_mean": 2.3877594470977783,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 12,
+          "mae": 3.9318771882790315e-7,
+          "max_abs": 0.000008344650268554688,
+          "reference_mean": 2.3828468322753906,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 13,
+          "mae": 5.419951207841223e-7,
+          "max_abs": 0.000011205673217773438,
+          "reference_mean": 2.403596878051758,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 14,
+          "mae": 3.1420324830833124e-7,
+          "max_abs": 0.00000858306884765625,
+          "reference_mean": 2.4434094429016113,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 15,
+          "mae": 3.762456231015676e-7,
+          "max_abs": 0.00000858306884765625,
+          "reference_mean": 2.4875710010528564,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 16,
+          "mae": 7.078625117173942e-7,
+          "max_abs": 0.000008106231689453125,
+          "reference_mean": 2.483194589614868,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 17,
+          "mae": 4.591709057422122e-7,
+          "max_abs": 0.000009059906005859375,
+          "reference_mean": 2.44973087310791,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 18,
+          "mae": 3.2001341310206044e-7,
+          "max_abs": 0.000010013580322265625,
+          "reference_mean": 2.4304628372192383,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 19,
+          "mae": 3.359113520673418e-7,
+          "max_abs": 0.0000064373016357421875,
+          "reference_mean": 2.429487705230713,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 20,
+          "mae": 4.899563350591052e-7,
+          "max_abs": 0.000010013580322265625,
+          "reference_mean": 2.4255030155181885,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 21,
+          "mae": 5.446560180644155e-7,
+          "max_abs": 0.00000667572021484375,
+          "reference_mean": 2.4080679416656494,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 22,
+          "mae": 4.0935512402029417e-7,
+          "max_abs": 0.000009775161743164062,
+          "reference_mean": 2.3987886905670166,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 23,
+          "mae": 8.566362339479383e-7,
+          "max_abs": 0.000015974044799804688,
+          "reference_mean": 2.395951747894287,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 24,
+          "mae": 0.0000016962125073405332,
+          "max_abs": 0.000011444091796875,
+          "reference_mean": 2.381812334060669,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 25,
+          "mae": 3.654336921954382e-7,
+          "max_abs": 0.000010728836059570312,
+          "reference_mean": 2.3714966773986816,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 26,
+          "mae": 5.507861828846217e-7,
+          "max_abs": 0.000008821487426757812,
+          "reference_mean": 2.3510711193084717,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 27,
+          "mae": 5.822789148623997e-7,
+          "max_abs": 0.000007867813110351562,
+          "reference_mean": 2.3286807537078857,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 28,
+          "mae": 4.409488951750973e-7,
+          "max_abs": 0.0000095367431640625,
+          "reference_mean": 2.31481671333313,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 29,
+          "mae": 9.788348052097717e-7,
+          "max_abs": 0.000009298324584960938,
+          "reference_mean": 2.283125638961792,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 30,
+          "mae": 7.420750876008242e-7,
+          "max_abs": 0.0000095367431640625,
+          "reference_mean": 2.2698960304260254,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 31,
+          "mae": 9.277644039684674e-7,
+          "max_abs": 0.000010251998901367188,
+          "reference_mean": 2.3010759353637695,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 32,
+          "mae": 3.3835328849818325e-7,
+          "max_abs": 0.000007867813110351562,
+          "reference_mean": 2.3437328338623047,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 33,
+          "mae": 0.0000011038458751500002,
+          "max_abs": 0.000010728836059570312,
+          "reference_mean": 2.35158634185791,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "source_hw": [
+        101,
+        101
+      ],
+      "depth_network_hw": [
+        98,
+        98
+      ],
+      "frames": 2,
+      "flow_updates": 8,
+      "component": "depth",
+      "reference_precision": "fp32",
+      "native_stdout": "NATIVE frame 0\nNATIVE frame 1\nEXPECTED source size change: guides: depth source size changed; reset required\nindependent_state max_abs=0\nreset_bootstrap max_abs=0\nretained_session_size_change max_abs=0\nretained_session_restore_size max_abs=0\nEXPECTED disabled flow: guides unavailable: flow component disabled\nEXPECTED disabled depth: guides unavailable: depth component disabled\nEXPECTED missing VDA asset: guides unavailable: missing C:\\work\\dlss5_remake\\model\\native_guides\\validation_101x101_d98\\empty_models\\vda_small_dynamic_init.onnx; export this model/configuration offline with native/tools/export_guides.py\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\onnxruntime.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\onnxruntime_providers_cuda.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\cudnn64_9.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\cublas64_12.dll\nLOADED C:\\work\\dlss5_remake\\native\\guides\\build\\Release\\cufft64_11.dll\nPASS native stream/state/error checks\n",
+      "results": [
+        {
+          "component": "depth",
+          "frame": 0,
+          "mae": 0.000001303554313381028,
+          "max_abs": 0.000015735626220703125,
+          "reference_mean": 2.327727794647217,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        },
+        {
+          "component": "depth",
+          "frame": 1,
+          "mae": 0.0000010884376706599141,
+          "max_abs": 0.000011444091796875,
+          "reference_mean": 2.2944839000701904,
+          "atol": 0.03,
+          "rtol": 0.005,
+          "pass": true
+        }
+      ],
+      "pass": true
+    }
+  ],
+  "pass": true
+}
