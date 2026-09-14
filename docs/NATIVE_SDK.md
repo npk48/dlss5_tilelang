@@ -24,7 +24,7 @@ size changes use explicit spatial bilinear resizing, not FSR2.
 ## Build
 
 Requirements: Windows x64, MSVC 2022 x64 tools, CMake/Ninja, CUDA Toolkit >=12.2,
-SM89 GPU and NVIDIA driver. `.toolchains/cuda12.8` provides runtime NR NVRTC
+SM89 GPU and NVIDIA driver. Node.js 22+ and npm are frontend **build-time** dependencies only. `.toolchains/cuda12.8` provides runtime NR NVRTC
 compilation. The native ONNX Runtime SDK and CUDA/cuDNN DLLs are staged under
 `native/third_party/ort`; see `native/guides/DEPENDENCIES.md`.
 
@@ -35,7 +35,8 @@ powershell -ExecutionPolicy Bypass -File native/build.ps1
 Outputs in `native/build`:
 
 - `dlss5.dll` and `dlss5.lib`: shared SDK plus **import library**, not a standalone static SDK archive.
-- `dlss5_server.exe`: API server, web assets and compressed native dependencies.
+- `dlss5_server.exe`: small native API server; runtime, model and web assets are external.
+- `assets/`: production React/TypeScript frontend built by Vite.
 - `d5_consumer.exe`: separate consumer linked through the public DLL/import library.
 - `d5_interface_bench.exe`: paired C ABI versus direct native NR timing tool.
 
@@ -66,10 +67,10 @@ part of the exported filename. Additional assets can coexist in this directory.
 ## C ABI
 
 Include `native/include/dlss5.h`, link `dlss5.lib`, and deploy `dlss5.dll`. For built-in
-estimators, deploy the ORT/CUDA/cuDNN runtime directory beside the application, or
-register it using `AddDllDirectory` before creating an estimator. Set
-`NATIVE_NR_TOOLCHAIN` to the native CUDA12.8 tree (`nvrtc/bin`, `runtime/include`,
-`cccl/include`) before NR preparation.
+estimators, register the shared `runtime/bin` directory using `AddDllDirectory`
+before creating an estimator (or deploy its DLLs beside the host application). Set
+`NATIVE_NR_TOOLCHAIN` to `runtime/cuda12.8` before NR preparation. The packaged
+consumer example detects the distribution’s shared runtime automatically.
 
 All structures have `struct_size`; configuration also has `abi_version`. Initialize
 configuration and settings with the `d5_default_*` functions. NR is enabled by
@@ -176,26 +177,57 @@ pass index, timing/jitter and NR settings. Callback `user` memory belongs to the
 caller and must outlive its registration and in-flight work. No callback state is
 automatically freed by the SDK.
 
-## Native Server
+## Native Server and WebUI
 
-Copy **only** `dlss5_server.exe` and `model/` to the target directory, then run:
+Deploy the folder layout, not the EXE alone:
 
-```powershell
-.\dlss5_server.exe
-# or
-.\dlss5_server.exe --model D:\models\dlss5 --port 7863
+```text
+dist/
+  dlss5_server.exe              # native application code, no asset archive
+  assets/                      # Vite build: index.html and hashed JS/CSS
+  model/                       # NR BIN and native_guides ONNX assets
+  runtime/
+    bin/                       # ONNX Runtime, CUDA/cuDNN and VC++ redistributables
+    cuda12.8/                  # NVRTC compiler and C++ headers
+  native-sdk/
+    bin/dlss5.dll
+    lib/dlss5.lib
+    include/dlss5.h
+  licenses/
 ```
 
-Open `http://127.0.0.1:7863`. The EXE contains web assets, SDK, ORT/CUDA/cuDNN
-libraries and the NR compiler/header dependencies. It is about 1.7 GB because
-these vendor runtimes are large. On first launch, dependencies are checksum-checked
-and extracted under `%LOCALAPPDATA%/DLSS5Native/<archive-sha256>/`; later launches
-reuse the cache. This is **single-file distribution**, not a promise of zero disk
-extraction. NVIDIA's installed driver and Windows system libraries remain required.
+```powershell
+.\dlss5_server.exe --port 7863
+# Optional paths; defaults resolve relative to the EXE, not the current directory:
+.\dlss5_server.exe --runtime D:\dlss5\runtime --model D:\models\dlss5 --assets D:\dlss5\assets
+```
+
+Open `http://127.0.0.1:7863`. The server loads native dependencies directly from
+`runtime/bin` and compiles NR using `runtime/cuda12.8`. It no longer embeds or
+extracts assets, and does not read a hidden LocalAppData dependency cache. Large
+vendor libraries still occupy disk space; externalizing them makes the EXE small
+and lets runtime, models and UI be updated independently. Node/npm is not needed
+on the deployed machine.
+
+The UI is a real npm project at `native/webui`:
+
+```powershell
+cd native/webui
+npm ci
+npm run dev       # Vite dev server, /v1 and /api proxied to the native server
+npm run build     # dist/index.html plus production JS/CSS assets
+```
+
+`native/build.ps1` integrates the npm build; `native/package.ps1 -IncludeModels`
+assembles the folder above. For frontend-only development, no C++ relink is needed:
+build with npm and pass `--assets native/webui/dist` (absolute path recommended).
+If assets are missing, the API still starts and `/` returns a clear 503 rather than
+an embedded fallback page.
 
 API:
 
-- `GET /v1/info`
+- `GET /v1/info`: external asset/runtime/model paths and available model filenames;
+- `GET /v1/jobs`: up to eight recent jobs, submitted config and Unix creation times;
 - `POST /v1/jobs`: multipart `image` and optional `config` JSON string;
 - `GET /v1/jobs/{id}`: status, error, timing and output location;
 - `GET /v1/jobs/{id}/result.png`
@@ -222,8 +254,9 @@ not built into this server. Hosts can submit decoded video frames through the AP
 
 Default binding is loopback. Non-loopback `--host` requires `--token`; clients send
 `Authorization: Bearer <token>`. Use a TLS reverse proxy on untrusted networks.
-Cross-origin browser requests are rejected. The minimal bundled UI does not store
-or inject API tokens; use it on the local default endpoint.
+Cross-origin browser requests are rejected. The static UI remains public so its connection dialog can collect an API token;
+API routes require the bearer token. The UI also fetches protected result images
+with that token instead of exposing the token in image URLs.
 
 ## Qualification and unsupported variants
 

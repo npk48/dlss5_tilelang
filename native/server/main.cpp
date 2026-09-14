@@ -17,7 +17,7 @@
 #include <atomic>
 #include <chrono>
 #include <array>
-#include "web_asset.h"
+
 using json=nlohmann::json;
 using Clock=std::chrono::steady_clock;
 namespace {
@@ -33,7 +33,7 @@ struct Session {
  explicit Session(int index){cuda(cuInit(0));cuda(cuDeviceGet(&device,index));cuda(cuDevicePrimaryCtxRetain(&context,device));cuda(cuCtxPushCurrent(context));auto r=cuStreamCreate(&stream,CU_STREAM_NON_BLOCKING);CUcontext old;cuCtxPopCurrent(&old);if(r){cuDevicePrimaryCtxRelease(device);cuda(r);}}
  ~Session(){if(context){cuCtxPushCurrent(context);if(sdk)d5_destroy(sdk);if(stream){cuStreamSynchronize(stream);cuStreamDestroy(stream);}CUcontext old;cuCtxPopCurrent(&old);cuDevicePrimaryCtxRelease(device);}}
 };
-struct Job {std::string id,status="queued",error,upload,png,stream_id;json config,metrics;};
+struct Job {std::string id,status="queued",error,upload,png,stream_id;json config,metrics;double created_at=std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();};
 class Jobs {
  std::mutex mutex;std::condition_variable cv;std::deque<std::shared_ptr<Job>> queue;std::map<std::string,std::shared_ptr<Job>> records;std::deque<std::string> order;std::map<std::string,std::unique_ptr<Session>> sessions;bool stop=false;std::thread worker;std::string model_dir;int device;
  void status(const std::shared_ptr<Job>&j,const char*s){std::lock_guard<std::mutex> lock(mutex);j->status=s;}
@@ -48,19 +48,31 @@ class Jobs {
  }catch(const std::exception&e){std::lock_guard<std::mutex>lock(mutex);j->status="failed";j->error=e.what();j->upload.clear();} }sessions.clear();}
  public:Jobs(std::string dir,int dev):model_dir(std::move(dir)),device(dev){worker=std::thread([this]{loop();});}~Jobs(){{std::lock_guard<std::mutex>lock(mutex);stop=true;}cv.notify_one();worker.join();}
  std::string submit(std::string upload,json cfg){if(!cfg.is_object())throw std::runtime_error("config must be a JSON object");const std::vector<std::string> allowed={"width","height","nr_width","nr_height","mix","flow_updates","flow_longest_side","depth_input_size","nr","depth","flow","guide","reconstruction","passes","structure","tone","style","skin","automatic_mask","temporal_strength","intensity","reset","stream_id","delta_ms"};for(auto it=cfg.begin();it!=cfg.end();++it)if(std::find(allowed.begin(),allowed.end(),it.key())==allowed.end())throw std::runtime_error("Unsupported server setting: "+it.key());std::lock_guard<std::mutex>lock(mutex);if(queue.size()>=4)throw std::runtime_error("Job queue full");auto j=std::make_shared<Job>();j->id=::id();j->upload=std::move(upload);j->config=std::move(cfg);j->stream_id=j->config.value("stream_id",std::string{});if(j->stream_id.size()>128)throw std::runtime_error("stream_id too long");while(order.size()>=8){auto old=records.find(order.front());if(old->second->status!="completed"&&old->second->status!="failed")throw std::runtime_error("Too many unfinished jobs");records.erase(old);order.pop_front();}records[j->id]=j;order.push_back(j->id);queue.push_back(j);cv.notify_one();return j->id;}
- json get(const std::string& id){std::lock_guard<std::mutex>lock(mutex);auto it=records.find(id);if(it==records.end())throw std::runtime_error("Job not found");auto&j=*it->second;return {{"id",j.id},{"status",j.status},{"error",j.error},{"stream_id",j.stream_id},{"metrics",j.metrics},{"result",j.status=="completed"?"/v1/jobs/"+id+"/result.png":""}};}
+ static json snapshot(const Job& j){return {{"id",j.id},{"status",j.status},{"error",j.error},{"stream_id",j.stream_id},{"metrics",j.metrics},{"config",j.config},{"created_at",j.created_at},{"result",j.status=="completed"?"/v1/jobs/"+j.id+"/result.png":""}};}
+ json get(const std::string& id){std::lock_guard<std::mutex>lock(mutex);auto it=records.find(id);if(it==records.end())throw std::runtime_error("Job not found");return snapshot(*it->second);}
+ json list(){std::lock_guard<std::mutex>lock(mutex);json items=json::array();for(auto it=order.rbegin();it!=order.rend();++it)items.push_back(snapshot(*records.at(*it)));return {{"jobs",items}};}
+
  std::string result(const std::string&id){std::lock_guard<std::mutex>lock(mutex);auto it=records.find(id);if(it==records.end()||it->second->status!="completed")throw std::runtime_error("Result not available");return it->second->png;}
 };
 std::filesystem::path exe_dir(){std::wstring path(32768,L'\0');DWORD n=GetModuleFileNameW(nullptr,path.data(),(DWORD)path.size());path.resize(n);return std::filesystem::path(path).parent_path();}
 }
-void install_embedded_dependencies();
+void configure_external_runtime(const std::filesystem::path& directory);
 int main(int argc,char**argv){try{
- std::string host="127.0.0.1",token;int port=7863,device=0;std::filesystem::path models=exe_dir()/"model";
- for(int i=1;i<argc;++i){std::string a=argv[i];auto next=[&](){if(++i>=argc)throw std::runtime_error("Missing option value");return std::string(argv[i]);};if(a=="--port")port=std::stoi(next());else if(a=="--host")host=next();else if(a=="--token")token=next();else if(a=="--model")models=std::filesystem::u8path(next());else if(a=="--device")device=std::stoi(next());else if(a=="--help"){std::cout<<"dlss5_server [--model PATH] [--port 7863] [--host 127.0.0.1] [--token SECRET] [--device 0]\n";return 0;}else throw std::runtime_error("Unknown option "+a);}
- if(host!="127.0.0.1"&&host!="localhost"&&host!="::1"&&token.empty())throw std::runtime_error("Non-loopback binding requires --token; use TLS reverse proxy on untrusted networks");install_embedded_dependencies();Jobs jobs(models.u8string(),device);httplib::Server server;server.set_payload_max_length(32u*1024u*1024u);server.set_read_timeout(30,0);server.set_write_timeout(30,0);server.new_task_queue=[](){return new httplib::ThreadPool(4);};
- server.set_pre_routing_handler([&](const httplib::Request&r,httplib::Response&s){if(!token.empty()&&r.get_header_value("Authorization")!="Bearer "+token){s.status=401;s.set_content("{\"error\":\"Bearer token required\"}","application/json");return httplib::Server::HandlerResponse::Handled;}if(r.has_header("Origin")&&r.get_header_value("Origin")!="http://"+r.get_header_value("Host")){s.status=403;s.set_content("{\"error\":\"Cross-origin request rejected\"}","application/json");return httplib::Server::HandlerResponse::Handled;}return httplib::Server::HandlerResponse::Unhandled;});
- server.Get("/",[](const auto&,auto&s){s.set_content(std::string(d5_web_html),"text/html; charset=utf-8");s.set_header("Cache-Control","no-store");});
- auto info=[&](const auto&,auto&s){s.set_content(json({{"abi_version",d5_abi_version()},{"implementation","native CUDA, no Python"},{"model_directory",models.u8string()},{"device",device},{"packet_layout","F32 CHW16 -> HWC4"},{"gpu_target","SM89"},{"http_images","RGB/RGBA PNG/JPEG/BMP; first frame; HWC GPU C ABI for advanced inputs"}}).dump(),"application/json");};server.Get("/v1/info",info);server.Get("/api/status",info);
+ std::string host="127.0.0.1",token;int port=7863,device=0;std::filesystem::path models=exe_dir()/"model",runtime=exe_dir()/"runtime",assets=exe_dir()/"assets";
+ for(int i=1;i<argc;++i){std::string a=argv[i];auto next=[&](){if(++i>=argc)throw std::runtime_error("Missing option value");return std::string(argv[i]);};if(a=="--port")port=std::stoi(next());else if(a=="--host")host=next();else if(a=="--token")token=next();else if(a=="--model")models=std::filesystem::u8path(next());else if(a=="--runtime")runtime=std::filesystem::u8path(next());else if(a=="--assets")assets=std::filesystem::u8path(next());else if(a=="--device")device=std::stoi(next());else if(a=="--help"){std::cout<<"dlss5_server [--model PATH] [--runtime PATH] [--assets PATH] [--port 7863] [--host 127.0.0.1] [--token SECRET] [--device 0]\n";return 0;}else throw std::runtime_error("Unknown option "+a);}
+ if(host!="127.0.0.1"&&host!="localhost"&&host!="::1"&&token.empty())throw std::runtime_error("Non-loopback binding requires --token; use TLS reverse proxy on untrusted networks");models=std::filesystem::absolute(models);runtime=std::filesystem::absolute(runtime);assets=std::filesystem::absolute(assets);configure_external_runtime(runtime);Jobs jobs(models.u8string(),device);httplib::Server server;server.set_payload_max_length(32u*1024u*1024u);server.set_read_timeout(30,0);server.set_write_timeout(30,0);server.new_task_queue=[](){return new httplib::ThreadPool(4);};
+ server.set_pre_routing_handler([&](const httplib::Request&r,httplib::Response&s){const bool api=r.path.rfind("/v1/",0)==0||r.path.rfind("/api/",0)==0;if(api&&!token.empty()&&r.get_header_value("Authorization")!="Bearer "+token){s.status=401;s.set_content("{\"error\":\"Bearer token required\"}","application/json");return httplib::Server::HandlerResponse::Handled;}if(api&&r.has_header("Origin")&&r.get_header_value("Origin")!="http://"+r.get_header_value("Host")){s.status=403;s.set_content("{\"error\":\"Cross-origin request rejected\"}","application/json");return httplib::Server::HandlerResponse::Handled;}return httplib::Server::HandlerResponse::Unhandled;});
+ if(std::filesystem::is_regular_file(assets/"index.html")){
+  if(!server.set_mount_point("/",assets.u8string()))throw std::runtime_error("Cannot mount web assets: "+assets.u8string());
+  server.set_file_request_handler([](const auto& r,auto& response){response.set_header("X-Content-Type-Options","nosniff");response.set_header("Cache-Control",r.path=="/"||r.path=="/index.html"?"no-cache":"public, max-age=31536000, immutable");});
+ }else{
+  std::cerr<<"Web assets missing: "<<assets.u8string()<<" (build native/webui and pass --assets)\n";
+  server.Get("/",[](const auto&,auto&response){response.status=503;response.set_content("Web assets missing. Build native/webui with npm run build and set --assets to its dist directory.","text/plain; charset=utf-8");});
+ }
+ auto info=[&](const auto&,auto&response){json available=json::array();if(std::filesystem::is_regular_file(models/"weights_ht_blob.bin"))available.push_back("weights_ht_blob.bin");if(std::filesystem::is_directory(models/"native_guides"))for(const auto& entry:std::filesystem::directory_iterator(models/"native_guides"))if(entry.is_regular_file()&&entry.path().extension()==".onnx")available.push_back("native_guides/"+entry.path().filename().u8string());
+  response.set_content(json({{"abi_version",d5_abi_version()},{"implementation","native CUDA, no Python"},{"model_directory",models.u8string()},{"assets_directory",assets.u8string()},{"runtime_directory",runtime.u8string()},{"assets_present",std::filesystem::is_regular_file(assets/"index.html")},{"runtime_present",std::filesystem::is_regular_file(runtime/"bin/onnxruntime.dll")&&std::filesystem::is_regular_file(runtime/"cuda12.8/nvrtc/bin/nvrtc64_120_0.dll")},{"available_models",available},{"device",device},{"packet_layout","F32 CHW16 -> HWC4"},{"gpu_target","SM89"},{"http_images","RGB/RGBA PNG/JPEG/BMP; first frame; HWC GPU C ABI for advanced inputs"}}).dump(),"application/json");
+ };server.Get("/v1/info",info);server.Get("/api/status",info);
+ server.Get("/v1/jobs",[&](const auto&,auto&response){response.set_content(jobs.list().dump(),"application/json");});
  auto submit=[&](const httplib::Request&r,httplib::Response&s){try{if(!r.has_file("image"))throw std::runtime_error("multipart image field required");json cfg=json::object();if(r.has_file("config"))cfg=json::parse(r.get_file_value("config").content);auto id=jobs.submit(r.get_file_value("image").content,cfg);s.status=202;s.set_content(json({{"id",id},{"status_url","/v1/jobs/"+id}}).dump(),"application/json");}catch(const std::exception&e){s.status=400;s.set_content(json({{"error",e.what()}}).dump(),"application/json");}};server.Post("/v1/jobs",submit);server.Post("/api/jobs",submit);
  server.Get(R"(/v1/jobs/([a-f0-9]+)/result\.png)",[&](const auto&r,auto&s){try{s.set_content(jobs.result(r.matches[1]),"image/png");}catch(const std::exception&e){s.status=404;s.set_content(json({{"error",e.what()}}).dump(),"application/json");}});
  server.Get(R"(/v1/jobs/([a-f0-9]+))",[&](const auto&r,auto&s){try{s.set_content(jobs.get(r.matches[1]).dump(),"application/json");}catch(const std::exception&e){s.status=404;s.set_content(json({{"error",e.what()}}).dump(),"application/json");}});
@@ -68,6 +80,7 @@ int main(int argc,char**argv){try{
   json schema;schema["openapi"]="3.0.3";schema["info"]={{"title","DLSS5 Native Server"},{"version","1"}};
   auto param=json::array({{{"name","id"},{"in","path"},{"required",true},{"schema",{{"type","string"}}}}});
   schema["paths"]["/v1/info"]["get"]["responses"]["200"]={{"description","SDK information"}};
+  schema["paths"]["/v1/jobs"]["get"]["responses"]["200"]={{"description","Up to eight recent jobs, with effective submitted config and created_at Unix seconds"}};
   auto& post=schema["paths"]["/v1/jobs"]["post"];post["summary"]="Queue native processing";
   post["requestBody"]["required"]=true;
   post["requestBody"]["content"]["multipart/form-data"]["schema"]={{"type","object"},{"required",json::array({"image"})},{"properties",{{"image",{{"type","string"},{"format","binary"}}},{"config",{{"type","string"},{"description","JSON: width,height,structure,tone,style,skin,passes,mix,depth,flow,guide,reset,stream_id"}}}}}};
@@ -75,5 +88,5 @@ int main(int argc,char**argv){try{
   for(const char* path:{"/v1/jobs/{id}","/v1/jobs/{id}/result.png"}){auto& get=schema["paths"][path]["get"];get["parameters"]=param;get["responses"]["200"]={{"description","Job status or output PNG"}};}
   response.set_content(schema.dump(),"application/json");
  });
- std::cout<<"DLSS5 native server http://"<<host<<":"<<port<<"\nModels: "<<models.u8string()<<"\n";if(!server.listen(host,port))throw std::runtime_error("Cannot listen on requested endpoint");return 0;
+ std::cout<<"DLSS5 native server http://"<<host<<":"<<port<<"\nModels: "<<models.u8string()<<"\nRuntime: "<<runtime.u8string()<<"\nWeb assets: "<<assets.u8string()<<"\n";if(!server.listen(host,port))throw std::runtime_error("Cannot listen on requested endpoint");return 0;
  }catch(const std::exception&e){std::cerr<<"Error: "<<e.what()<<"\n";return 1;}}

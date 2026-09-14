@@ -4,11 +4,11 @@
 
 项目不调用 NGX，也不是游戏注入插件。它接收显式 guide，或从 RGB 估计 depth / optical flow，再经过 NR chain 与 FSR 时域重建输出图像序列。
 
-## 原生 Windows SDK / 单文件 Server
+## 原生 Windows SDK / Server 工作室
 
 新增 `native/` 提供不依赖 Python 的 C ABI：`dlss5.dll` + 导入库 `dlss5.lib`，以及静态链接同一 SDK 的 `dlss5_server.exe`。基于 CUDA NR，原生接入可选 VDA、RAFT、guide 与默认 SDR FSR2；支持调用方 GPU buffer/stream 和逐阶段替换回调。
 
-构建、模型导出、API、同步语义与当前限制见 **[docs/NATIVE_SDK.md](docs/NATIVE_SDK.md)**。单 EXE 内嵌 web assets 和压缩原生依赖，模型外置 `./model`；首次启动会将依赖解包到用户本地缓存。原有 Python/TileLang 路径继续保留用于研究和对照。
+构建、模型导出、API、同步语义与当前限制见 **[docs/NATIVE_SDK.md](docs/NATIVE_SDK.md)**。Server 使用小体积 EXE + 外置 `runtime/`、`model/`、`assets/` 分发，不再内嵌或解包大型依赖。`native/webui` 是 React/TypeScript/Vite npm 工程，生产 assets 由原生 Server 提供。原有 Python/TileLang 路径继续保留用于研究和对照。
 
 ## 执行路径
 
@@ -48,7 +48,7 @@ dlss5_remake/
 │   ├── model_loader.py            # 冻结 BIN 的向量化加载器
 │   ├── fp8_compiler.py            # 为 FP8 kernel 挂载私有 CUDA 12.8 工具链
 │   └── device.py                  # SM89 target 与 TileLang 配置
-├── native/                        # 原生 C ABI SDK、CUDA/ORT 组件与单 EXE Server
+├── native/                        # 原生 C ABI SDK、CUDA/ORT 组件与 Server / npm WebUI
 ├── reference/
 │   ├── dlss5_model.py             # 冻结模型定义、BIN 解码与 packet 语义
 │   ├── whitebox_pipeline/         # Torch 参考管线及第三方许可/来源

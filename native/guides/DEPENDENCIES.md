@@ -29,8 +29,8 @@ initializer); a completely disabled Engine needs no ORT DLL, and an enabled Engi
 throws a clear error if the core DLL is missing. Secure Windows default DLL search
 or an already loaded module is used, not an arbitrary Python/PATH search.
 ORT's CUDA provider dynamically loads its companion provider DLLs.
-A self-extracting server must extract these before loading ORT; this library
-does not implement EXE embedding/extraction.
+The server uses the external `runtime/bin` directory and explicitly registers it
+before loading ORT. No EXE embedding, extraction or hidden dependency cache is used.
 
 Native SDK source:
 https://api.nuget.org/v3-flatcontainer/microsoft.ml.onnxruntime.gpu.windows/1.20.1/microsoft.ml.onnxruntime.gpu.windows.1.20.1.nupkg

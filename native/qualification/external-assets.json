@@ -1,0 +1,120 @@
+{
+  "layout": "external-assets-v2",
+  "previous_exe_bytes": 1711506944,
+  "exe_bytes": 3584512,
+  "runtime": "dist/runtime/bin + dist/runtime/cuda12.8",
+  "models": "dist/model",
+  "frontend": "native/webui (React/TypeScript/Vite), deployed to dist/assets",
+  "runtime_dll_count": 27,
+  "legacy_sdk_toolchain_exists": false,
+  "hidden_dependency_extraction_created": false,
+  "environment": "arbitrary CWD, system-only PATH, empty toolchain env values, fresh LOCALAPPDATA",
+  "runtime_modules": [
+    {
+      "ModuleName": "onnxruntime.dll",
+      "FileName": "C:\\work\\dlss5_remake\\dist\\runtime\\bin\\onnxruntime.dll"
+    },
+    {
+      "ModuleName": "onnxruntime_providers_shared.dll",
+      "FileName": "C:\\work\\dlss5_remake\\dist\\runtime\\bin\\onnxruntime_providers_shared.dll"
+    },
+    {
+      "ModuleName": "onnxruntime_providers_cuda.dll",
+      "FileName": "C:\\work\\dlss5_remake\\dist\\runtime\\bin\\onnxruntime_providers_cuda.dll"
+    },
+    {
+      "ModuleName": "cudnn64_9.dll",
+      "FileName": "C:\\work\\dlss5_remake\\dist\\runtime\\bin\\cudnn64_9.dll"
+    },
+    {
+      "ModuleName": "cublas64_12.dll",
+      "FileName": "C:\\work\\dlss5_remake\\dist\\runtime\\bin\\cublas64_12.dll"
+    },
+    {
+      "ModuleName": "cublasLt64_12.dll",
+      "FileName": "C:\\work\\dlss5_remake\\dist\\runtime\\bin\\cublasLt64_12.dll"
+    },
+    {
+      "ModuleName": "cudnn_graph64_9.dll",
+      "FileName": "C:\\work\\dlss5_remake\\dist\\runtime\\bin\\cudnn_graph64_9.dll"
+    },
+    {
+      "ModuleName": "cudnn_ops64_9.dll",
+      "FileName": "C:\\work\\dlss5_remake\\dist\\runtime\\bin\\cudnn_ops64_9.dll"
+    },
+    {
+      "ModuleName": "cudnn_engines_precompiled64_9.dll",
+      "FileName": "C:\\work\\dlss5_remake\\dist\\runtime\\bin\\cudnn_engines_precompiled64_9.dll"
+    },
+    {
+      "ModuleName": "cudnn_heuristic64_9.dll",
+      "FileName": "C:\\work\\dlss5_remake\\dist\\runtime\\bin\\cudnn_heuristic64_9.dll"
+    },
+    {
+      "ModuleName": "cudnn_engines_runtime_compiled64_9.dll",
+      "FileName": "C:\\work\\dlss5_remake\\dist\\runtime\\bin\\cudnn_engines_runtime_compiled64_9.dll"
+    }
+  ],
+  "browser": {
+    "base": "http://127.0.0.1:17864",
+    "job": {
+      "config": {
+        "automatic_mask": false,
+        "depth": true,
+        "depth_input_size": 518,
+        "flow": true,
+        "flow_longest_side": 512,
+        "flow_updates": 8,
+        "guide": true,
+        "height": 0,
+        "intensity": 1,
+        "mix": 1,
+        "nr": true,
+        "nr_height": 0,
+        "nr_width": 0,
+        "passes": 1,
+        "reconstruction": true,
+        "reset": true,
+        "skin": -1,
+        "structure": 2,
+        "style": 1,
+        "temporal_strength": 1,
+        "tone": 1,
+        "width": 0
+      },
+      "created_at": 1789366000.0039642,
+      "error": "",
+      "id": "3f92306008b2e31",
+      "metrics": {
+        "enabled_stages": 47,
+        "frame": 0,
+        "height": 360,
+        "input_height": 360,
+        "input_width": 640,
+        "process_seconds_including_upload_download": 2.5241779,
+        "setup_seconds": 59.7097463,
+        "total_seconds": 62.2778956,
+        "width": 640
+      },
+      "result": "/v1/jobs/3f92306008b2e31/result.png",
+      "status": "completed",
+      "stream_id": ""
+    },
+    "checks": [
+      "public static assets",
+      "protected APIs",
+      "token connection",
+      "upload",
+      "full GPU pipeline",
+      "source/result pairing",
+      "PNG download",
+      "effective config download",
+      "wipe slider",
+      "zoom",
+      "mobile layout",
+      "no browser exceptions",
+      "HTTP PNG identity is pixel-exact"
+    ]
+  },
+  "png_codec_fix": "WIC negotiates BGRA; encode explicitly converts SDK RGBA to straight BGRA. Native asymmetric RGBA round-trip max5.96e-8, HTTP disabled-processing identity is byte-exact in browser canvas."
+}
