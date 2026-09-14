@@ -1,0 +1,149 @@
+{
+  "format": 1,
+  "reference": {
+    "models": [
+      {
+        "name": "raft-small-C_T_V2",
+        "file": "raft_small_C_T_V2-01064c6d.pth",
+        "url": "https://download.pytorch.org/models/raft_small_C_T_V2-01064c6d.pth",
+        "prefix": "01064c6d",
+        "sha256": "01064c6dba73b0fc9fc8edf772248560a00a3acfd62ac6677e9eeebad9680e27",
+        "bytes": 4006189
+      },
+      {
+        "name": "metric-video-depth-anything-small",
+        "file": "metric_video_depth_anything_vits.pth",
+        "url": "https://huggingface.co/depth-anything/Metric-Video-Depth-Anything-Small/resolve/273d090f2ce17df50c2872d82c8322c45da5b4dd/metric_video_depth_anything_vits.pth",
+        "sha256": "3c28432b4e1f0d7bb31cad5151b6313b49457db5aa58d82e85bfb0f8b1311b33",
+        "revision": "273d090f2ce17df50c2872d82c8322c45da5b4dd",
+        "model_license": "apache-2.0",
+        "bytes": 116444063
+      }
+    ],
+    "torch": "2.5.1+cu124",
+    "torchvision": "0.20.1+cu124",
+    "depth_source_repo": "https://github.com/DepthAnything/Video-Depth-Anything",
+    "depth_source_commit": "4f5ae23172ba60fd7bc11ef671cca678842c7072",
+    "raft_license_note": "Torchvision source BSD-3-Clause; checkpoint/data and redistribution terms require separate review; local research use here",
+    "nr_weights_not_relicensed": true
+  },
+  "exports": [
+    {
+      "file": "raft_small_u8.onnx",
+      "sha256": "cc5d72d315fd93b4d3149791cdd27ca2f67de1533c0052cb20a7d08a3d431ad6",
+      "dynamic_spatial": true,
+      "updates": 8,
+      "minimum_hw": [
+        128,
+        128
+      ],
+      "multiple": 8
+    },
+    {
+      "file": "vda_small_518x924_init.onnx",
+      "sha256": "712e0ab51f07fd1bd543c2877cabe7324d0cae9043c1ad5d6811a5b252048bdc",
+      "network_hw": [
+        518,
+        924
+      ],
+      "cache_shapes": [
+        [
+          2442,
+          1,
+          192
+        ],
+        [
+          2442,
+          1,
+          192
+        ],
+        [
+          627,
+          1,
+          384
+        ],
+        [
+          627,
+          1,
+          384
+        ],
+        [
+          2442,
+          1,
+          64
+        ],
+        [
+          2442,
+          1,
+          64
+        ],
+        [
+          9768,
+          1,
+          64
+        ],
+        [
+          9768,
+          1,
+          64
+        ]
+      ],
+      "precision": "float32"
+    },
+    {
+      "file": "vda_small_518x924_step.onnx",
+      "sha256": "b87046f622eae6f291b2c234871f10ccd45746907547e06d0fe0490b69d6f440",
+      "network_hw": [
+        518,
+        924
+      ],
+      "cache_shapes": [
+        [
+          2442,
+          1,
+          192
+        ],
+        [
+          2442,
+          1,
+          192
+        ],
+        [
+          627,
+          1,
+          384
+        ],
+        [
+          627,
+          1,
+          384
+        ],
+        [
+          2442,
+          1,
+          64
+        ],
+        [
+          2442,
+          1,
+          64
+        ],
+        [
+          9768,
+          1,
+          64
+        ],
+        [
+          9768,
+          1,
+          64
+        ]
+      ],
+      "precision": "float32"
+    }
+  ],
+  "variant": "Metric Small experimental causal streaming, not offline VDA",
+  "precision": "FP32; compare MetricVideoDepth(fp32=True)",
+  "torch": "2.5.1+cu124",
+  "onnx": "1.16.0"
+}

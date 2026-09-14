@@ -1,0 +1,172 @@
+{
+  "validation": [
+    {
+      "report": "model/native_guides/validation_72x128_d56/comparison.json",
+      "source_hw": [
+        72,
+        128
+      ],
+      "depth_network_hw": [
+        56,
+        98
+      ],
+      "frames": 13,
+      "pass": true,
+      "flow": {
+        "max_mae": 0.0000033629398785706144,
+        "max_absolute_error": 0.00001537799835205078
+      },
+      "depth": {
+        "max_mae": 0.0000014499916005661362,
+        "max_absolute_error": 0.0000073909759521484375
+      }
+    },
+    {
+      "report": "model/native_guides/validation_360x640_d518/comparison.json",
+      "source_hw": [
+        360,
+        640
+      ],
+      "depth_network_hw": [
+        518,
+        924
+      ],
+      "frames": 13,
+      "pass": true,
+      "flow": {
+        "max_mae": 0.000011640012417046819,
+        "max_absolute_error": 0.00011157989501953125
+      },
+      "depth": {
+        "max_mae": 6.254596769394993e-7,
+        "max_absolute_error": 0.00003123283386230469
+      }
+    }
+  ],
+  "configuration": "Windows x64 / MSVC19.36 / CUDA12.2 helper kernels / ORT1.20.1 CUDA12.4 cuDNN9.1 / RTX4080 Laptop",
+  "link_validation": "Rebuilt standalone /MT and cudart_static; two default-size frames plus reset/independent/error checks pass with no CRT conflict warning",
+  "deployment": "13-frame default run used Windows-system-only PATH; GPU DLL paths resolved next to guides_verify.exe; no Python/Torch DLL loaded",
+  "profiling": [
+    {
+      "file": "native/guides/build/profiles/raft_small_u8.onnx_2026-09-14_11-23-53.json",
+      "memcpy": [
+        {
+          "op": "MemcpyFromHost",
+          "input_shape": [
+            {
+              "float": []
+            }
+          ],
+          "bytes": 4
+        },
+        {
+          "op": "MemcpyFromHost",
+          "input_shape": [
+            {
+              "float": []
+            }
+          ],
+          "bytes": 4
+        },
+        {
+          "op": "MemcpyFromHost",
+          "input_shape": [
+            {
+              "float": []
+            }
+          ],
+          "bytes": 4
+        },
+        {
+          "op": "MemcpyFromHost",
+          "input_shape": [
+            {
+              "float": []
+            }
+          ],
+          "bytes": 4
+        },
+        {
+          "op": "MemcpyFromHost",
+          "input_shape": [
+            {
+              "float": []
+            }
+          ],
+          "bytes": 4
+        },
+        {
+          "op": "MemcpyFromHost",
+          "input_shape": [
+            {
+              "float": []
+            }
+          ],
+          "bytes": 4
+        },
+        {
+          "op": "MemcpyFromHost",
+          "input_shape": [
+            {
+              "float": []
+            }
+          ],
+          "bytes": 4
+        },
+        {
+          "op": "MemcpyFromHost",
+          "input_shape": [
+            {
+              "float": []
+            }
+          ],
+          "bytes": 4
+        },
+        {
+          "op": "MemcpyFromHost",
+          "input_shape": [
+            {
+              "float": []
+            }
+          ],
+          "bytes": 4
+        }
+      ]
+    },
+    {
+      "file": "native/guides/build/profiles/vda_small_518x924_init.onnx_2026-09-14_11-23-51.json",
+      "memcpy": []
+    },
+    {
+      "file": "native/guides/build/profiles/vda_small_518x924_init.onnx_2026-09-14_11-23-53.json",
+      "memcpy": []
+    },
+    {
+      "file": "native/guides/build/profiles/vda_small_518x924_init.onnx_2026-09-14_11-23-55.json",
+      "memcpy": []
+    },
+    {
+      "file": "native/guides/build/profiles/vda_small_518x924_step.onnx_2026-09-14_11-23-51.json",
+      "memcpy": []
+    },
+    {
+      "file": "native/guides/build/profiles/vda_small_518x924_step.onnx_2026-09-14_11-23-54.json",
+      "memcpy": []
+    },
+    {
+      "file": "native/guides/build/profiles/vda_small_518x924_step.onnx_2026-09-14_11-23-56.json",
+      "memcpy": []
+    }
+  ],
+  "limits": [
+    "VDA network shape specialized: delivered518x924 and56x98. Export other aspect ratios offline.",
+    "RAFT dynamic H/W; updates8 exported.",
+    "Full VDA FP32 reference equivalence, not default autocast FP16 bit-equivalence.",
+    "Numerical fixtures are analytic translating texture, not a task-accuracy benchmark."
+  ],
+  "lazy_backend_validation": {
+    "unavailable_backend": "PASS disabled backend needs no ORT; enabled throws: guides unavailable: incompatible ONNX Runtime API; require 1.20+\r\n The requested API version [20] is not available, only API versions [1, 17] are supported in this build. Current ORT Version is: 1.17.1\r\n",
+    "present_backend": "NATIVE frame 0\r\nNATIVE frame 1\r\nEXPECTED source size change: guides: depth source size changed; reset required\r\nindependent_state max_abs=0\r\nreset_bootstrap max_abs=0\r\nEXPECTED disabled flow: guides unavailable: flow component disabled\r\nEXPECTED disabled depth: guides unavailable: depth component disabled\r\nEXPECTED missing RAFT asset: guides unavailable: missing c:\\work\\dlss5_remake\\model\\native_guides\\validation_360x640_d518\\empty_models\\raft_small_u8.onnx; export this model/configuration offline with native/tools/export_guides.py\r\nEXPECTED missing VDA asset: guides unavailable: missing c:\\work\\dlss5_remake\\model\\native_guides\\validation_360x640_d518\\empty_models\\vda_small_518x924_init.onnx; export this model/configuration offline with native/tools/export_guides.py\r\nLOADED c:\\work\\dlss5_remake\\native\\guides\\build\\Release\\onnxruntime.dll\r\nLOADED c:\\work\\dlss5_remake\\native\\guides\\build\\Release\\onnxruntime_providers_cuda.dll\r\nLOADED c:\\work\\dlss5_remake\\native\\guides\\build\\Release\\cudnn64_9.dll\r\nLOADED c:\\work\\dlss5_remake\\native\\guides\\build\\Release\\cublas64_12.dll\r\nLOADED c:\\work\\dlss5_remake\\native\\guides\\build\\Release\\cufft64_11.dll\r\nPASS native stream/state/error checks\r\n",
+    "clean_path": "C:\\WINDOWS\\System32;C:\\WINDOWS"
+  }
+}

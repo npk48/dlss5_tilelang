@@ -1,0 +1,80 @@
+[
+  {
+    "name": "320x384_0",
+    "h": 320,
+    "w": 384,
+    "reference_seconds": 64.0396722999867,
+    "packet_sha256": "8380c48f59de95596eeaadc9fce5defdd8a217042cc5a4e38f18d5cef5a33d2c",
+    "reference_sha256": "7e8836ec415219fd7ce6c5752ee3410cb1d1c8712b4fa0e9fa71b91fcd418c85",
+    "native_sha256": "7e8836ec415219fd7ce6c5752ee3410cb1d1c8712b4fa0e9fa71b91fcd418c85",
+    "max_abs": 0.0,
+    "mean_abs": 0.0,
+    "different_values": 0,
+    "bitwise_equal": true
+  },
+  {
+    "name": "320x384_1",
+    "h": 320,
+    "w": 384,
+    "reference_seconds": 0.05186459980905056,
+    "packet_sha256": "3c6d1bdd461ae30cb966c21412b1f5f0f6f19ffa4b19662462e1ea56ccf8193b",
+    "reference_sha256": "bab6a5685b617dd64591f8f6c03ab852f55b255cc1522f45eae7779e1294c219",
+    "native_sha256": "bab6a5685b617dd64591f8f6c03ab852f55b255cc1522f45eae7779e1294c219",
+    "max_abs": 0.0,
+    "mean_abs": 0.0,
+    "different_values": 0,
+    "bitwise_equal": true
+  },
+  {
+    "name": "128x192_0",
+    "h": 128,
+    "w": 192,
+    "reference_seconds": 77.11388870002702,
+    "packet_sha256": "85f5fef4864a535e6efdde9b803d9c4f6c7cf3a3de17ac0c5a67873911051b87",
+    "reference_sha256": "aeacdc8ba5656bb64897f96f976b8b062035c004a4a0fa9c3fe8ec276f0d21fb",
+    "native_sha256": "aeacdc8ba5656bb64897f96f976b8b062035c004a4a0fa9c3fe8ec276f0d21fb",
+    "max_abs": 0.0,
+    "mean_abs": 0.0,
+    "different_values": 0,
+    "bitwise_equal": true
+  },
+  {
+    "name": "128x192_1",
+    "h": 128,
+    "w": 192,
+    "reference_seconds": 0.052354900166392326,
+    "packet_sha256": "0698c224caad22017fdacffe4782601b6f0357406ba5051986ade8dec57a27b1",
+    "reference_sha256": "56de6addaa2154c7673b3fbd526906f09ab04d319195b52adcd01b17dcb08da9",
+    "native_sha256": "56de6addaa2154c7673b3fbd526906f09ab04d319195b52adcd01b17dcb08da9",
+    "max_abs": 0.0,
+    "mean_abs": 0.0,
+    "different_values": 0,
+    "bitwise_equal": true
+  },
+  {
+    "name": "384x320_0",
+    "h": 384,
+    "w": 320,
+    "reference_seconds": 62.89771079993807,
+    "packet_sha256": "32f022700eb60744f963b3aa6c973e59b79a24daf23dbeeade9fd6ce40143492",
+    "reference_sha256": "c866b8a84adf92668ee1c532b8d7fc4339c5a0305ca048c7687aff53a1bc37e2",
+    "native_sha256": "c866b8a84adf92668ee1c532b8d7fc4339c5a0305ca048c7687aff53a1bc37e2",
+    "max_abs": 0.0,
+    "mean_abs": 0.0,
+    "different_values": 0,
+    "bitwise_equal": true
+  },
+  {
+    "name": "384x320_1",
+    "h": 384,
+    "w": 320,
+    "reference_seconds": 0.04933109995909035,
+    "packet_sha256": "89c8d2dbc55f230fc11d9728541390ad337516c739edf41d0a3e9d9cde49596a",
+    "reference_sha256": "77811c0f0a234ebbd1cdd34841ab408185a9c218fbc04a14a764a0b949e0b70c",
+    "native_sha256": "77811c0f0a234ebbd1cdd34841ab408185a9c218fbc04a14a764a0b949e0b70c",
+    "max_abs": 0.0,
+    "mean_abs": 0.0,
+    "different_values": 0,
+    "bitwise_equal": true
+  }
+]

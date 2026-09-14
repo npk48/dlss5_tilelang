@@ -1,0 +1,178 @@
+{
+  "ort": "1.20.1",
+  "cuda_runtime": "12.4",
+  "cudnn": "9.1",
+  "download": "https://api.nuget.org/v3-flatcontainer/microsoft.ml.onnxruntime.gpu.windows/1.20.1/microsoft.ml.onnxruntime.gpu.windows.1.20.1.nupkg",
+  "licenses": [
+    "LICENSE",
+    "ThirdPartyNotices.txt",
+    "TORCH_DISTRIBUTION_NOTICES",
+    "https://docs.nvidia.com/cuda/eula/index.html",
+    "https://docs.nvidia.com/deeplearning/cudnn/backend/latest/reference/eula.html"
+  ],
+  "files": [
+    {
+      "file": "runtime/cublas64_12.dll",
+      "bytes": 100188672,
+      "sha256": "6ed2a2b8a1a7d243ee76acc81bbbfaadddb3264e0526a785ef58a8c6420dd05d",
+      "source": "standalone native redistributable from installed torch 2.5.1+cu124 wheel; NOT a Torch runtime dependency"
+    },
+    {
+      "file": "runtime/cublasLt64_12.dll",
+      "bytes": 472802816,
+      "sha256": "0b58a51fa30b0af7640b80ca2a1c2f3f0b93d62774aa0a34af7ba8c090684d31",
+      "source": "standalone native redistributable from installed torch 2.5.1+cu124 wheel; NOT a Torch runtime dependency"
+    },
+    {
+      "file": "runtime/cudart64_12.dll",
+      "bytes": 553984,
+      "sha256": "f95273031fc5ea44cdb37e0a696a1b15b9d84a4ee977299a6f6e652ef4d790cf",
+      "source": "standalone native redistributable from installed torch 2.5.1+cu124 wheel; NOT a Torch runtime dependency"
+    },
+    {
+      "file": "runtime/cudnn64_9.dll",
+      "bytes": 438840,
+      "sha256": "c07cc47f2fa4a566593c7af4aa7e57edf09a985a0fddd14cb8d6f456e252af05",
+      "source": "standalone native redistributable from installed torch 2.5.1+cu124 wheel; NOT a Torch runtime dependency"
+    },
+    {
+      "file": "runtime/cudnn_adv64_9.dll",
+      "bytes": 241576488,
+      "sha256": "3527c9543bc464e083bbb29f0e49622bec968b5329cc9bb70ffadce2a4ca5fc6",
+      "source": "standalone native redistributable from installed torch 2.5.1+cu124 wheel; NOT a Torch runtime dependency"
+    },
+    {
+      "file": "runtime/cudnn_cnn64_9.dll",
+      "bytes": 4019752,
+      "sha256": "5087e9a39bb599db48350e2fc88ca37a86e83f2944ff0183bc56f3f9cbde2972",
+      "source": "standalone native redistributable from installed torch 2.5.1+cu124 wheel; NOT a Torch runtime dependency"
+    },
+    {
+      "file": "runtime/cudnn_engines_precompiled64_9.dll",
+      "bytes": 588910632,
+      "sha256": "680625354e9f2ac80d573cc94fc5190848198262557226edd482aaca4ccb9113",
+      "source": "standalone native redistributable from installed torch 2.5.1+cu124 wheel; NOT a Torch runtime dependency"
+    },
+    {
+      "file": "runtime/cudnn_engines_runtime_compiled64_9.dll",
+      "bytes": 8235560,
+      "sha256": "d0e8c076508e21a5a7b3c2b3f577df74f7a767e95e35133e81bdd38bf8839d8a",
+      "source": "standalone native redistributable from installed torch 2.5.1+cu124 wheel; NOT a Torch runtime dependency"
+    },
+    {
+      "file": "runtime/cudnn_graph64_9.dll",
+      "bytes": 2160680,
+      "sha256": "df730314816b59890db41428745c860b2be0112ed296892bbcc426296822aa54",
+      "source": "standalone native redistributable from installed torch 2.5.1+cu124 wheel; NOT a Torch runtime dependency"
+    },
+    {
+      "file": "runtime/cudnn_heuristic64_9.dll",
+      "bytes": 85741608,
+      "sha256": "ee6d4831251387ab52a549df7ce7e5256272426eeef23a36d172ca8c725afba1",
+      "source": "standalone native redistributable from installed torch 2.5.1+cu124 wheel; NOT a Torch runtime dependency"
+    },
+    {
+      "file": "runtime/cudnn_ops64_9.dll",
+      "bytes": 107721256,
+      "sha256": "e26d81b20ceda0fff0fce1b60f5c4a7c0b32650afa2ab49f0ea4496816bead5b",
+      "source": "standalone native redistributable from installed torch 2.5.1+cu124 wheel; NOT a Torch runtime dependency"
+    },
+    {
+      "file": "runtime/cufft64_11.dll",
+      "bytes": 291784192,
+      "sha256": "7be2aa7509d93202f55b9c940f880aec53063d8c20ce505ea9012990c2b6e088",
+      "source": "standalone native redistributable from installed torch 2.5.1+cu124 wheel; NOT a Torch runtime dependency"
+    },
+    {
+      "file": "runtime/nvrtc-builtins64_124.dll",
+      "bytes": 5559296,
+      "sha256": "3ba326d21bb242488c0284ebc32fd6dbc94025ecab34862015a5c95eb178c961",
+      "source": "standalone native redistributable from installed torch 2.5.1+cu124 wheel; NOT a Torch runtime dependency"
+    },
+    {
+      "file": "runtime/nvrtc64_120_0.dll",
+      "bytes": 44733952,
+      "sha256": "e55461f252b519478e9bf09f8bd1f0f3b6e3064c9270fac6a29d6eb23216835c",
+      "source": "standalone native redistributable from installed torch 2.5.1+cu124 wheel; NOT a Torch runtime dependency"
+    },
+    {
+      "file": "runtime/onnxruntime.dll",
+      "bytes": 12400160,
+      "sha256": "1fabf449edd2957326e0db1d123939c63a9a9e5588050fea9548501578c5e1b4",
+      "source": "Microsoft.ML.OnnxRuntime.Gpu.Windows 1.20.1 NuGet"
+    },
+    {
+      "file": "runtime/onnxruntime_providers_cuda.dll",
+      "bytes": 673741344,
+      "sha256": "42ceff79ef21c50dba832e48e2bd97ad952ce0ec721c786fd13bfb8873a144b7",
+      "source": "Microsoft.ML.OnnxRuntime.Gpu.Windows 1.20.1 NuGet"
+    },
+    {
+      "file": "runtime/onnxruntime_providers_shared.dll",
+      "bytes": 22072,
+      "sha256": "167ff56b0c8f9bf2758cc351e6b17b52a7bcd582fbf8ba4b3cf982921e9c0a91",
+      "source": "Microsoft.ML.OnnxRuntime.Gpu.Windows 1.20.1 NuGet"
+    },
+    {
+      "file": "runtime/zlibwapi.dll",
+      "bytes": 89088,
+      "sha256": "1f047faec08d9a35c304fb4a7cf13853589359a8f7cbfdd48c5d5807712dcf05",
+      "source": "standalone native redistributable from installed torch 2.5.1+cu124 wheel; NOT a Torch runtime dependency"
+    },
+    {
+      "file": "runtime/concrt140.dll",
+      "bytes": 327576,
+      "sha256": "de1d1bf38090094b702833ddf3a68ee1f5d4ae20ca57f5392fabcf4c49c5b807",
+      "source": "Visual Studio 2022 redistributable Microsoft.VC143.CRT 14.36.32532"
+    },
+    {
+      "file": "runtime/msvcp140.dll",
+      "bytes": 578384,
+      "sha256": "74892d9b4028c05debaf0b9b5d9dc6d22f7956fa7d7eee00c681318c26792823",
+      "source": "Visual Studio 2022 redistributable Microsoft.VC143.CRT 14.36.32532"
+    },
+    {
+      "file": "runtime/msvcp140_1.dll",
+      "bytes": 35704,
+      "sha256": "a3a1199de32bbbc8318ec33e2e1ce556247d012851e4b367fe853a51e74ce4ee",
+      "source": "Visual Studio 2022 redistributable Microsoft.VC143.CRT 14.36.32532"
+    },
+    {
+      "file": "runtime/msvcp140_2.dll",
+      "bytes": 267160,
+      "sha256": "63f1a20cb17ec5e0ca4ebea870b68740f24e063e28b235c3c8b58a3d8f57a9c4",
+      "source": "Visual Studio 2022 redistributable Microsoft.VC143.CRT 14.36.32532"
+    },
+    {
+      "file": "runtime/msvcp140_atomic_wait.dll",
+      "bytes": 50072,
+      "sha256": "7e02efe075b7dd385992f621fde34728ef7c2d4cf090b127b093d0835345f8fe",
+      "source": "Visual Studio 2022 redistributable Microsoft.VC143.CRT 14.36.32532"
+    },
+    {
+      "file": "runtime/msvcp140_codecvt_ids.dll",
+      "bytes": 31640,
+      "sha256": "3bd90db2f147899c65fe279f3e44ac48f5598cd0c23a09c0410be072a4c96070",
+      "source": "Visual Studio 2022 redistributable Microsoft.VC143.CRT 14.36.32532"
+    },
+    {
+      "file": "runtime/vccorlib140.dll",
+      "bytes": 346008,
+      "sha256": "986a9f1dccabce249a0db23b9f5e2057ab644081cd04c647f2711884cff2b346",
+      "source": "Visual Studio 2022 redistributable Microsoft.VC143.CRT 14.36.32532"
+    },
+    {
+      "file": "runtime/vcruntime140.dll",
+      "bytes": 109440,
+      "sha256": "69320f278d90efaaeb67e2a1b55e5b0543883125834c812c8d9c39676e0494fc",
+      "source": "Visual Studio 2022 redistributable Microsoft.VC143.CRT 14.36.32532"
+    },
+    {
+      "file": "runtime/vcruntime140_1.dll",
+      "bytes": 49560,
+      "sha256": "6fd366a691ed68430bcd0a3de3d8d19a0cb2102952bfc140bbef4354ed082c47",
+      "source": "Visual Studio 2022 redistributable Microsoft.VC143.CRT 14.36.32532"
+    }
+  ],
+  "msvc_runtime": "14.36.32532"
+}

@@ -1,0 +1,92 @@
+{
+  "sdk": "native Windows C ABI v1",
+  "target": "SM89 Windows x64",
+  "python_runtime": false,
+  "public_dll": {
+    "packet_shape": [
+      320,
+      384
+    ],
+    "bit_exact_with_cuda_reference": true,
+    "head_sha256": "7e8836ec415219fd7ce6c5752ee3410cb1d1c8712b4fa0e9fa71b91fcd418c85",
+    "full_pipeline_frames": 4,
+    "stages": [
+      "VDA",
+      "RAFT",
+      "guide",
+      "FSR2",
+      "CUDA NR",
+      "output"
+    ],
+    "nondefault_stream": true,
+    "replacement_output_gpu_bit_exact": true,
+    "host_pointer_rejected": true,
+    "borrowed_stage_output": true
+  },
+  "interface_benchmark": {
+    "direct_median_ms": 4.2015,
+    "dll_median_ms": 3.8051,
+    "difference_ms": -0.3964,
+    "samples_each": 20,
+    "bit_exact": true
+  },
+  "benchmark_note": "One workload, 20 paired samples each; timing variance means the negative difference is not a claimed speedup.",
+  "standalone_server": {
+    "cwd": "independent temporary directory",
+    "path": "Windows system directories only",
+    "models": "copied external model directory",
+    "dependencies": "embedded archive extracted under LocalAppData; ORT/CUDA/cuDNN/VC++ loaded from extraction cache, no Python/Torch",
+    "first": {
+      "error": "",
+      "id": "3f92221f957bf81",
+      "metrics": {
+        "enabled_stages": 47,
+        "frame": 0,
+        "height": 360,
+        "input_height": 360,
+        "input_width": 640,
+        "process_seconds_including_upload_download": 2.3064949,
+        "setup_seconds": 47.2287791,
+        "total_seconds": 49.5727614,
+        "width": 640
+      },
+      "result": "/v1/jobs/3f92221f957bf81/result.png",
+      "status": "completed",
+      "stream_id": "controls"
+    },
+    "live_controls": {
+      "changed": [
+        "structure=1.75",
+        "tone=0.8",
+        "passes=2"
+      ],
+      "result": {
+        "error": "",
+        "id": "3f92226e96232c2",
+        "metrics": {
+          "enabled_stages": 47,
+          "frame": 1,
+          "height": 360,
+          "input_height": 360,
+          "input_width": 640,
+          "process_seconds_including_upload_download": 0.3842069,
+          "setup_seconds": 0.005129,
+          "total_seconds": 0.4237574,
+          "width": 640
+        },
+        "result": "/v1/jobs/3f92226e96232c2/result.png",
+        "status": "completed",
+        "stream_id": "controls"
+      }
+    },
+    "png_downloaded": true,
+    "unknown_setting_http_status": 400
+  },
+  "limits": [
+    "SM89 only",
+    "VDA network grid 518x924 included; other aspect ratios require offline export",
+    "RAFT u8 graph included",
+    "No HDR FSR, EASU or geometry fit built-in",
+    "Synchronous scalar validation / ORT completion; not CUDA Graph capturable"
+  ]
+}

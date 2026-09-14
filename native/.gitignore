@@ -1,0 +1,7 @@
+/build/
+/build-*/
+/third_party/ort/
+**/build/
+**/build-*/
+**/validation/
+*.log

@@ -3,6 +3,10 @@ __pycache__/
 *.pyc
 .cache/
 outputs/
+dist/
+consumer-output.f32
+model/native_guides/validation*/
+model/native_guides/*_56x98_*.onnx
 .lux/
 
 
