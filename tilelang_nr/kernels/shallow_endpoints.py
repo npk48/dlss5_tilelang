@@ -6,6 +6,7 @@ from tilelang_nr.instructions import instruction_source
 from pathlib import Path
 import torch
 import tilelang
+from tilelang_nr.common.runtime_jit import spatial_jit
 import tilelang.language as T
 from runtime.fp8_compiler import private_compile
 from tilelang_nr.common.shallow import (
@@ -464,7 +465,8 @@ def body(
         )
 
 
-@tilelang.jit(
+@spatial_jit(
+    dynamic="H0 W0_ gx gy sizes in_offset out_offset counter pool_offset skip_offset",
     target={
         'kind': 'cuda', 'arch': 'sm_89'
     },

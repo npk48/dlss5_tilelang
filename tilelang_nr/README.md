@@ -2,7 +2,7 @@
 
 按实际计算功能组织。算法组合以 797fd63 的 `VitJointTileLangNR` 为准，公开入口经
 `run.Engine` → `app.backend.Backend` → `runtime.VitJointTileLangNR` → `registry.resolve(organization='vit')`，
-**每个被选中的 Step 只构建一次**。
+每个计划为 Step 绑定空间数据，编译产物则按模型/硬件结构共享。
 
 ## 从公开入口追到计算
 
@@ -39,3 +39,19 @@ Half 分片，不能当作普通行主序中间 tensor。共享 helper 不合并
 
 `report()` 里的 `coverage[].selected_factories` 给出最终选中的工厂分布，`tilelang_steps` 计真正执行过的
 逻辑 Step。193 = utility 2 + shallow 10 + 2H/4H 21 + 8H 16 + 16H 102 + ViT 42。
+
+## 运行时空间几何
+
+`common/runtime_jit.py` 的 `spatial_jit` 只把结构参数放入编译缓存键。空间 H/W、grid、buffer 长度、offset、completion 和路由参数成为显式 int32 PrimFunc 参数；新计划仅建立 `BoundKernel`，即使旧 plan 被驱逐也不会因网格变化重新编译。原有输入对齐、尺寸和显存限制仍有效。
+
+运行时整数地址表达式使用选择性的 opaque binding 保留 DAG，防止 TVM 把它们反复展开。仅处理纯整数运算，不隐藏 load/external call，也不关闭正常 Simplify 或安全访存。GPU 编译器将 `max(x,x)` 化简为原值。通道、MMA、FP8 及浮点计算顺序未改变。
+
+`common/bound_launch.py` 绑定 TileLang 生成的 host launch 配置，并复用 CUDA 参数存储，减少逐 Step 参数封装。它不编译另一套 GPU 代码：仍执行原 TileLang CUBIN。每次调用刷新 tensor 指针和当前 stream；参数存储在 driver 消费期间受锁保护。核心 NR 本身仍遵守原默认-stream/单 workspace 使用边界。
+
+报告中的 `runtime_compilation` 是进程级结构缓存统计；`coverage[].runtime_geometry` 展示当前 arena/grid/deep geometry。`jit_builds` 包括从磁盘重建的结构绑定，不能把它等同于 NVRTC 次数。所有 pool geometry 都绑定 padding kernel，避免首次遇到需要 padding 的网格才补编译。
+
+## 复现验证
+
+`native/tools/bench_nr_dynamic.py packets <directory>` 生成确定性真实模型输入 packet；`bench_tilelang_dynamic.py` 和 `run_tilelang_pair.py` 分别运行完整 NR 与冻结版本交替配对。`check_tilelang_dynamic_pipeline.py --generate` 生成实际 Engine.run 输入；随后运行该脚本验证混合尺寸、连续帧、pass/settings 改变和切回。
+
+`tilelang_nr/tests/test_runtime_jit.py` 覆盖空间整数绑定规则；`tests/check_bound_stream.py` 在 GPU 上验证准备式 launch 的新指针、两个非默认 stream 和默认 stream。最终证据见 `native/qualification/tilelang-runtime-spatial.json`；性能仍存在已量化的回退，不是零开销动态化。

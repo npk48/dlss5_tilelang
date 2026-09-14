@@ -1,18 +1,13 @@
-# Qualified TileLang cache bundle
+# Runtime-spatial TileLang cache bundle
 
-This is a compact, tracked seed for the actual WebUI workload that exposed the cold-compile failure. It is **not** the old 776 MB development cache.
+This is a compact, tracked seed for TileLang **0.1.14**, Windows **win32-AMD64**, CUDA **SM89**. It is not a general binary distribution and not a resolution catalog.
 
-Qualified environment and workload:
+The NR entries contain runtime H/W, launch grids, buffer extents, offsets and routing geometry. Model/channel/MMA/FP8 structure remains specialized. There are 59 architecture bindings across 13 core factories plus three NR-chain factories; identical generated programs can share a disk entry. Unrelated auxiliary entries from the previous bundle are retained, while the 74 obsolete static-core cache entries were replaced.
 
-- TileLang `0.1.14`
-- Windows `win32-AMD64`
-- CUDA target `sm_89`
-- RGB-estimated WebUI output `510×549`
-- NR neural shape `512×640`
-- one NR pass
+`bundle.json` records the exact bundle ID, file count and bytes. `runtime/bootstrap.py` seeds this directory into writable `.cache/tilelang`; setting `TILELANG_CACHE_DIR` explicitly disables automatic seeding. Files in this tracked directory are never modified by inference.
 
-`bundle.json` records the exact bundle ID, file count, and byte size. `runtime/bootstrap.py` copies this read-only bundle once into the writable, ignored `.cache/tilelang` directory. New shapes compile into `.cache`; they never modify this tracked directory.
+The full NR was compared bit-exactly with the frozen pre-change TileLang implementation on 320×384, 384×512 and 512×640, including switchback. A fresh writable cache seeded **only from this bundle** also ran the real `Engine.run` path over ten mixed-size/continuous frames and 1→2→1 NR-pass changes without adding NR compilation. See `native/qualification/tilelang-runtime-spatial.json`.
 
-TileLang's disk loader verifies each entry through its own `manifest.json`. The generated `host_kernel.cu` and `device_kernel.cu` files look redundant, but TileLang 0.1.14 requires them when reconstructing a cached `JITKernel`, so they cannot be removed independently.
+Versions, model structure, GPU architecture or source changes may need new compilation. First-ever uncached compilation remains expensive. Non-NR pipeline kernels retain their own compilation behavior. Tensor allocation and layout/routing preparation still occur when geometry changes; steady-state inference is not claimed to match the static implementation's speed.
 
-A cache-only replay was run with `DLSS5_FP8_TOOLCHAIN` intentionally pointed at a missing directory. The workload completed, proving that this bundle contains all required FP8 NR entries for the qualified shape. Other output/neural shapes may still compile on first use.
+Keep the generated host/device sources and per-entry manifests: TileLang's disk loader requires them when rebuilding `JITKernel` objects.

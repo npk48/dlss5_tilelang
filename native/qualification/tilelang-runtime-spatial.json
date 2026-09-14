@@ -1,0 +1,714 @@
+{
+  "status": "passed with measured steady-state performance regression",
+  "baseline_commit": "588548ad9f201c04b9bd07501f1c9b8dd90be2f9",
+  "environment": {
+    "gpu": "NVIDIA GeForce RTX 4080 Laptop GPU",
+    "architecture": "SM89",
+    "tilelang": "0.1.14",
+    "torch": "2.5.1+cu124",
+    "private_nvrtc": "CUDA12.8",
+    "os": "Windows x64"
+  },
+  "scope": {
+    "math": "Pure TileLang; no original CUDA NR fallback",
+    "spatial": "Runtime H/W, grid, buffer extents, offsets, completion and routing; architecture-only compilation keys",
+    "core_logical_steps": 193,
+    "model_blocks": 71,
+    "core_factories": 13,
+    "nr_chain_factories": 3,
+    "alignment": "Existing aligned neural-grid and memory limits preserved; app input need not be aligned"
+  },
+  "paired_core": {
+    "rounds": 12,
+    "iterations_per_arm_per_round": 15,
+    "cases": [
+      {
+        "neural_hw": [
+          320,
+          384
+        ],
+        "packets": [
+          {
+            "variant": 0,
+            "bit_exact": true,
+            "max_abs": 0,
+            "pass": true
+          },
+          {
+            "variant": 1,
+            "bit_exact": true,
+            "max_abs": 0,
+            "pass": true
+          }
+        ],
+        "baseline_cached_process_prepare_s": 13.114185800077394,
+        "dynamic_cached_process_prepare_s": 8.448247199878097,
+        "dynamic_new_nvrtc_compiles": 0,
+        "baseline_gpu_round_median_ms": 3.6403039693832397,
+        "dynamic_gpu_round_median_ms": 4.170223951339722,
+        "paired_median_change_percent": 16.06942632796624,
+        "round_medians_ms": [
+          [
+            3.903808116912842,
+            3.836672067642212,
+            3.4922239780426025,
+            3.4652159214019775,
+            3.763200044631958,
+            3.705728054046631,
+            3.5748798847198486,
+            3.4477760791778564,
+            3.4099841117858887,
+            3.9796159267425537,
+            3.9560320377349854,
+            3.499232053756714
+          ],
+          [
+            7.406591892242432,
+            4.1769280433654785,
+            4.073472023010254,
+            4.080512046813965,
+            4.170752048492432,
+            4.151296138763428,
+            4.128799915313721,
+            4.063231945037842,
+            4.316160202026367,
+            4.186111927032471,
+            4.169695854187012,
+            4.206495761871338
+          ]
+        ]
+      },
+      {
+        "neural_hw": [
+          384,
+          512
+        ],
+        "packets": [
+          {
+            "variant": 0,
+            "bit_exact": true,
+            "max_abs": 0,
+            "pass": true
+          },
+          {
+            "variant": 1,
+            "bit_exact": true,
+            "max_abs": 0,
+            "pass": true
+          }
+        ],
+        "baseline_cached_process_prepare_s": 11.744981999974698,
+        "dynamic_cached_process_prepare_s": 1.5042958999983966,
+        "dynamic_new_nvrtc_compiles": 0,
+        "baseline_gpu_round_median_ms": 3.8307679891586304,
+        "dynamic_gpu_round_median_ms": 4.286607980728149,
+        "paired_median_change_percent": 13.46620773819529,
+        "round_medians_ms": [
+          [
+            4.124703884124756,
+            4.048895835876465,
+            3.5655360221862793,
+            3.528671979904175,
+            3.5531198978424072,
+            3.55020809173584,
+            4.034751892089844,
+            4.05401611328125,
+            3.806272029876709,
+            3.9198720455169678,
+            3.8552639484405518,
+            3.630079984664917
+          ],
+          [
+            4.560895919799805,
+            4.570079803466797,
+            4.249792098999023,
+            4.261888027191162,
+            4.232128143310547,
+            4.226816177368164,
+            4.280320167541504,
+            4.4832000732421875,
+            4.341440200805664,
+            4.271103858947754,
+            4.292895793914795,
+            4.6141438484191895
+          ]
+        ]
+      },
+      {
+        "neural_hw": [
+          512,
+          640
+        ],
+        "packets": [
+          {
+            "variant": 0,
+            "bit_exact": true,
+            "max_abs": 0,
+            "pass": true
+          },
+          {
+            "variant": 1,
+            "bit_exact": true,
+            "max_abs": 0,
+            "pass": true
+          }
+        ],
+        "baseline_cached_process_prepare_s": 12.7170243000146,
+        "dynamic_cached_process_prepare_s": 2.314023300074041,
+        "dynamic_new_nvrtc_compiles": 0,
+        "baseline_gpu_round_median_ms": 4.510207891464233,
+        "dynamic_gpu_round_median_ms": 5.154288053512573,
+        "paired_median_change_percent": 14.316034448424109,
+        "round_medians_ms": [
+          [
+            4.503551959991455,
+            4.6348161697387695,
+            4.493311882019043,
+            4.8752641677856445,
+            5.100831985473633,
+            4.523007869720459,
+            4.516863822937012,
+            4.029439926147461,
+            4.019199848175049,
+            4.2690558433532715,
+            3.93340802192688,
+            4.529151916503906
+          ],
+          [
+            5.120992183685303,
+            4.945919990539551,
+            4.976831912994385,
+            5.187583923339844,
+            5.397439956665039,
+            5.213183879852295,
+            5.315616130828857,
+            4.964352130889893,
+            4.893695831298828,
+            4.840447902679443,
+            5.199615955352783,
+            5.204991817474365
+          ]
+        ]
+      },
+      {
+        "neural_hw": [
+          320,
+          384
+        ],
+        "packets": [
+          {
+            "variant": 0,
+            "bit_exact": true,
+            "max_abs": 0,
+            "pass": true
+          },
+          {
+            "variant": 1,
+            "bit_exact": true,
+            "max_abs": 0,
+            "pass": true
+          }
+        ],
+        "baseline_cached_process_prepare_s": 0.9421883998438716,
+        "dynamic_cached_process_prepare_s": 1.0155670000240207,
+        "dynamic_new_nvrtc_compiles": 0,
+        "baseline_gpu_round_median_ms": 4.030992031097412,
+        "dynamic_gpu_round_median_ms": 4.4122560024261475,
+        "paired_median_change_percent": 11.72329552728375,
+        "round_medians_ms": [
+          [
+            4.453375816345215,
+            4.25164794921875,
+            4.0120320320129395,
+            4.101183891296387,
+            3.9662399291992188,
+            3.976191997528076,
+            3.9639039039611816,
+            4.141215801239014,
+            4.049952030181885,
+            3.980288028717041,
+            3.4355199337005615,
+            5.222400188446045
+          ],
+          [
+            4.3724799156188965,
+            4.332479953765869,
+            4.651008129119873,
+            4.647007942199707,
+            4.453375816345215,
+            4.44927978515625,
+            4.476928234100342,
+            4.15334415435791,
+            4.517663955688477,
+            4.375232219696045,
+            4.069056034088135,
+            4.071135997772217
+          ]
+        ]
+      }
+    ],
+    "final_jit_builds": 56,
+    "final_private_nvrtc_calls": 0,
+    "qualifier": "CUDA events span the actual full NR entry, including host launch supply gaps; not pure kernel busy time. Timing is specific to this device/workload, and remains slower than the static implementation."
+  },
+  "preparation": {
+    "previous_static_new_grid_without_matching_cache_s": {
+      "320x384": 502.19254499999806,
+      "384x512": 504.8244580999017
+    },
+    "previous_static_new_grid_nvrtc_calls": {
+      "320x384": 73,
+      "384x512": 60
+    },
+    "previous_static_release_cached_512x640_process_prepare_s": 15.079910499975085,
+    "notes": "Do not compare uncached static compilation with cached dynamic latency as GPU speedup. Fresh dynamic compilation still has significant cost (one observed seq154 ~151s); complete empty-cache dynamic compilation time was not measured. Shipped architecture kernels avoid this on the qualified environment. The uncached static observations were not a controlled cold head-to-head and could overlap other CPU compilation; use the explicitly cached-process figures separately."
+  },
+  "release_entry": {
+    "status": "passed",
+    "cache": "Fresh writable cache seeded ONLY from the updated tracked bundle, no development-cache seed",
+    "entry": "run.Engine.run via real manifest",
+    "frames": [
+      {
+        "frame": 1,
+        "output_hw": [
+          257,
+          321
+        ],
+        "neural_hw": [
+          320,
+          448
+        ],
+        "pass_count": 1,
+        "pass_history": [
+          {
+            "pass": 0,
+            "frame_index": 0,
+            "cold": true,
+            "settings": {
+              "style": 1,
+              "structure": 2,
+              "tone": 0.1,
+              "skin": -1,
+              "automatic_mask": false,
+              "temporal_strength": 0.8,
+              "intensity": 1
+            }
+          }
+        ],
+        "jit_builds": 59,
+        "private_nvrtc_calls": 0,
+        "host_input_to_output_s": 17.221998600056395
+      },
+      {
+        "frame": 2,
+        "output_hw": [
+          257,
+          321
+        ],
+        "neural_hw": [
+          320,
+          448
+        ],
+        "pass_count": 1,
+        "pass_history": [
+          {
+            "pass": 0,
+            "frame_index": 1,
+            "cold": false,
+            "settings": {
+              "style": 1,
+              "structure": 2,
+              "tone": 0.1,
+              "skin": -1,
+              "automatic_mask": false,
+              "temporal_strength": 0.8,
+              "intensity": 1
+            }
+          }
+        ],
+        "jit_builds": 59,
+        "private_nvrtc_calls": 0,
+        "host_input_to_output_s": 8.867952700005844
+      },
+      {
+        "frame": 3,
+        "output_hw": [
+          333,
+          481
+        ],
+        "neural_hw": [
+          384,
+          576
+        ],
+        "pass_count": 2,
+        "pass_history": [
+          {
+            "pass": 0,
+            "frame_index": 0,
+            "cold": true,
+            "settings": {
+              "style": 1,
+              "structure": 2,
+              "tone": 0.25,
+              "skin": -1,
+              "automatic_mask": false,
+              "temporal_strength": 0.65,
+              "intensity": 1
+            }
+          },
+          {
+            "pass": 1,
+            "frame_index": 0,
+            "cold": true,
+            "settings": {
+              "style": 1,
+              "structure": 2,
+              "tone": 1,
+              "skin": -1,
+              "automatic_mask": false,
+              "temporal_strength": 1,
+              "intensity": 0.4
+            }
+          }
+        ],
+        "jit_builds": 59,
+        "private_nvrtc_calls": 0,
+        "host_input_to_output_s": 9.994700099807233
+      },
+      {
+        "frame": 4,
+        "output_hw": [
+          333,
+          481
+        ],
+        "neural_hw": [
+          384,
+          576
+        ],
+        "pass_count": 2,
+        "pass_history": [
+          {
+            "pass": 0,
+            "frame_index": 1,
+            "cold": false,
+            "settings": {
+              "style": 1,
+              "structure": 2,
+              "tone": 0.25,
+              "skin": -1,
+              "automatic_mask": false,
+              "temporal_strength": 0.65,
+              "intensity": 1
+            }
+          },
+          {
+            "pass": 1,
+            "frame_index": 1,
+            "cold": false,
+            "settings": {
+              "style": 1,
+              "structure": 2,
+              "tone": 1,
+              "skin": -1,
+              "automatic_mask": false,
+              "temporal_strength": 1,
+              "intensity": 0.4
+            }
+          }
+        ],
+        "jit_builds": 59,
+        "private_nvrtc_calls": 0,
+        "host_input_to_output_s": 9.025192999979481
+      },
+      {
+        "frame": 5,
+        "output_hw": [
+          451,
+          601
+        ],
+        "neural_hw": [
+          512,
+          704
+        ],
+        "pass_count": 1,
+        "pass_history": [
+          {
+            "pass": 0,
+            "frame_index": 0,
+            "cold": true,
+            "settings": {
+              "style": 1,
+              "structure": 2,
+              "tone": 0.1,
+              "skin": -1,
+              "automatic_mask": false,
+              "temporal_strength": 0.8,
+              "intensity": 1
+            }
+          }
+        ],
+        "jit_builds": 59,
+        "private_nvrtc_calls": 0,
+        "host_input_to_output_s": 10.821683200076222
+      },
+      {
+        "frame": 6,
+        "output_hw": [
+          451,
+          601
+        ],
+        "neural_hw": [
+          512,
+          704
+        ],
+        "pass_count": 1,
+        "pass_history": [
+          {
+            "pass": 0,
+            "frame_index": 1,
+            "cold": false,
+            "settings": {
+              "style": 1,
+              "structure": 2,
+              "tone": 0.1,
+              "skin": -1,
+              "automatic_mask": false,
+              "temporal_strength": 0.8,
+              "intensity": 1
+            }
+          }
+        ],
+        "jit_builds": 59,
+        "private_nvrtc_calls": 0,
+        "host_input_to_output_s": 8.819183599902317
+      },
+      {
+        "frame": 7,
+        "output_hw": [
+          321,
+          257
+        ],
+        "neural_hw": [
+          384,
+          384
+        ],
+        "pass_count": 1,
+        "pass_history": [
+          {
+            "pass": 0,
+            "frame_index": 0,
+            "cold": true,
+            "settings": {
+              "style": 1,
+              "structure": 2,
+              "tone": 0.1,
+              "skin": -1,
+              "automatic_mask": false,
+              "temporal_strength": 0.8,
+              "intensity": 1
+            }
+          }
+        ],
+        "jit_builds": 59,
+        "private_nvrtc_calls": 0,
+        "host_input_to_output_s": 9.241374199977145
+      },
+      {
+        "frame": 8,
+        "output_hw": [
+          321,
+          257
+        ],
+        "neural_hw": [
+          384,
+          384
+        ],
+        "pass_count": 1,
+        "pass_history": [
+          {
+            "pass": 0,
+            "frame_index": 1,
+            "cold": false,
+            "settings": {
+              "style": 1,
+              "structure": 2,
+              "tone": 0.1,
+              "skin": -1,
+              "automatic_mask": false,
+              "temporal_strength": 0.8,
+              "intensity": 1
+            }
+          }
+        ],
+        "jit_builds": 59,
+        "private_nvrtc_calls": 0,
+        "host_input_to_output_s": 8.605378600070253
+      },
+      {
+        "frame": 9,
+        "output_hw": [
+          257,
+          321
+        ],
+        "neural_hw": [
+          320,
+          448
+        ],
+        "pass_count": 1,
+        "pass_history": [
+          {
+            "pass": 0,
+            "frame_index": 0,
+            "cold": true,
+            "settings": {
+              "style": 1,
+              "structure": 2,
+              "tone": 0.1,
+              "skin": -1,
+              "automatic_mask": false,
+              "temporal_strength": 0.8,
+              "intensity": 1
+            }
+          }
+        ],
+        "jit_builds": 59,
+        "private_nvrtc_calls": 0,
+        "host_input_to_output_s": 1.3304723999463022
+      },
+      {
+        "frame": 10,
+        "output_hw": [
+          257,
+          321
+        ],
+        "neural_hw": [
+          320,
+          448
+        ],
+        "pass_count": 1,
+        "pass_history": [
+          {
+            "pass": 0,
+            "frame_index": 1,
+            "cold": false,
+            "settings": {
+              "style": 1,
+              "structure": 2,
+              "tone": 0.1,
+              "skin": -1,
+              "automatic_mask": false,
+              "temporal_strength": 0.8,
+              "intensity": 1
+            }
+          }
+        ],
+        "jit_builds": 59,
+        "private_nvrtc_calls": 0,
+        "host_input_to_output_s": 0.11496210005134344
+      }
+    ],
+    "counters": {
+      "fsr_reconstruct_calls": 10,
+      "fsr_depth_clip_calls": 10,
+      "fsr_locks_calls": 10,
+      "fsr_accumulate_calls": 10,
+      "nr_calls": 12,
+      "tilelang_vit_nr_calls": 12,
+      "nr_chain_calls": 10
+    },
+    "assertions": [
+      "all output dimensions preserved and values finite",
+      "ten frames with continuous histories, mixed portrait/landscape sizes and switchback",
+      "1→2→1 pass count and temporal/tone/intensity settings changes",
+      "59 structure builds loaded once; private NVRTC count remains zero on every frame"
+    ]
+  },
+  "host_binding": {
+    "implementation": "Reuse TileLang-generated launch metadata and ctypes argument storage; still launch the same TileLang CUBIN",
+    "stream_and_pointer_regression": "GPU clear kernel with fresh tensor pointers on two non-default streams and the default stream passed; no additional JIT builds",
+    "scope": "This helper test does not expand core NR default-stream/graph support"
+  },
+  "bundle": {
+    "bundle_id": "77c094caf0efcdc9be7174788669d6f4ecd45968ee2cbed21379e6f88607ea30",
+    "tilelang_version": "0.1.14",
+    "platform": "win32-AMD64",
+    "target": "cuda -arch=sm_89",
+    "nr_spatial_policy": "Runtime geometry; architecture-only kernels, not a resolution catalog",
+    "nr_architecture_entries": 59,
+    "nr_factories": 16,
+    "qualified_workload": {
+      "core_neural_hw": [
+        [
+          320,
+          384
+        ],
+        [
+          384,
+          512
+        ],
+        [
+          512,
+          640
+        ]
+      ],
+      "pipeline_output_hw": [
+        [
+          257,
+          321
+        ],
+        [
+          333,
+          481
+        ],
+        [
+          451,
+          601
+        ],
+        [
+          321,
+          257
+        ]
+      ],
+      "continuous_frames": 10,
+      "switchback": true,
+      "pipeline_neural_hw": [
+        [
+          320,
+          448
+        ],
+        [
+          384,
+          576
+        ],
+        [
+          512,
+          704
+        ],
+        [
+          384,
+          384
+        ]
+      ],
+      "nr_pass_counts": [
+        1,
+        2,
+        1
+      ]
+    },
+    "kernel_entries": 64,
+    "files": 436,
+    "bytes": 28073517,
+    "source": "Exact TileLang cache entries tagged during real Engine.run. Replaces obsolete static NR cache entries; retains unrelated auxiliary cache entries.",
+    "nr_unique_cache_entries": 53
+  },
+  "inputs": {
+    "generator": "native/tools/bench_nr_dynamic.py packets C:/tmp/d5-nr-eval/packets",
+    "description": "Model FrameInputs/build_preblock_features packet plus deterministic perturbed variant; full model computation, not isolated fixture"
+  },
+  "reproduce": {
+    "paired": "native/tools/run_tilelang_pair.py --baseline <frozen-repo> --output <eval-directory>",
+    "pipeline": "native/tools/check_tilelang_dynamic_pipeline.py --generate; then run with --cache <fresh-bundle-seed> --output <output-dir>",
+    "stream": "tilelang_nr/tests/check_bound_stream.py"
+  },
+  "uncommitted_at_measurement": true
+}

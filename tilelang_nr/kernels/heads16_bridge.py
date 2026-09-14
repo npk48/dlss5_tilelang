@@ -51,7 +51,7 @@ from tilelang_nr.common.deep import (
 )
 
 
-@_jit
+@_jit(dynamic="sizes count width poolwidth tails")
 def _bridge(kind, sizes, count, splits, activate, width, poolwidth, flags, tails):
     (n0, v0), (n1, v1) = tails
     s0, s1, s2, s3, s4, s5 = sizes
@@ -68,8 +68,8 @@ def _bridge(kind, sizes, count, splits, activate, width, poolwidth, flags, tails
         AH: T.Tensor((s0 // 2, ), 'float16'),
         BH: T.Tensor((s1 // 2, ), 'float16'),
         OH: T.Tensor((s3 // 2, ), 'float16'),
-        C0: T.Tensor((max(n0, 1), ), 'int32'),
-        C1: T.Tensor((max(n1, 1), ), 'int32')
+        C0: T.Tensor((T.max(n0, 1), ), 'int32'),
+        C1: T.Tensor((T.max(n1, 1), ), 'int32')
     ):
         with T.Kernel(T.ceildiv(count, 256), threads=256) as block:
             T.import_source(_HEADER)
@@ -106,7 +106,7 @@ def _bridge(kind, sizes, count, splits, activate, width, poolwidth, flags, tails
     return main
 
 
-@_jit
+@_jit(dynamic="sizes gx gy gz tails")
 def _local(sizes, gx, gy, gz, hasout, tails):
     (n0, v0), (n1, v1) = tails
     sa, splan, sw, sraw, smem, sout = sizes
@@ -120,8 +120,8 @@ def _local(sizes, gx, gy, gz, hasout, tails):
         Members: T.Tensor((smem, ), 'int32'),
         Out: T.Tensor((sout, ), 'uint8'),
         Scale: T.Tensor((sw // 4, ), 'float32'),
-        C0: T.Tensor((max(n0, 1), ), 'int32'),
-        C1: T.Tensor((max(n1, 1), ), 'int32')
+        C0: T.Tensor((T.max(n0, 1), ), 'int32'),
+        C1: T.Tensor((T.max(n1, 1), ), 'int32')
     ):
         with T.Kernel(gx, gy, gz, threads=128) as (bx, by, bz):
             T.import_source(_HEADER)
@@ -351,7 +351,7 @@ def page16(sh, A, p, sx, sy, H, W, first, l, warp, warps):
     T.evaluate(T.tvm_storage_sync('shared'))
 
 
-@_jit
+@_jit(dynamic="sizes H W tails")
 def _sixteen(sizes, H, W, variant, decoder, flags, tails):
     (n0, v0), (n1, v1) = tails
     sa, sw, ss, sr, shalf, sq, spool, spr = sizes
@@ -371,8 +371,8 @@ def _sixteen(sizes, H, W, variant, decoder, flags, tails):
         Quant: T.Tensor((sq, ), 'uint8'),
         Pool: T.Tensor((spool, ), 'uint8'),
         PoolRaw: T.Tensor((spr, ), 'uint8'),
-        C0: T.Tensor((max(n0, 1), ), 'int32'),
-        C1: T.Tensor((max(n1, 1), ), 'int32')
+        C0: T.Tensor((T.max(n0, 1), ), 'int32'),
+        C1: T.Tensor((T.max(n1, 1), ), 'int32')
     ):
         with T.Kernel(T.ceildiv(H, 8) if ffn else T.ceildiv(H, 8) * 2,
                       T.ceildiv(W, 8),

@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 import torch
 import tilelang
+from tilelang_nr.common.runtime_jit import spatial_jit
 import tilelang.language as T
 from runtime.fp8_compiler import private_compile
 from tilelang_nr.common.wide import (
@@ -224,7 +225,7 @@ def publish(C, P, A, R, tile, head, lane, first, height, width, gx, sx, sy, flag
                 )
 
 
-@tilelang.jit(**dict(_JIT, compile_flags=['-lineinfo']))
+@spatial_jit(dynamic="tiles height width gx sx sy rn sn wn inp out counter prn gn skip drn pon mn poolout ugn uln planar_rows", **dict(_JIT, compile_flags=['-lineinfo']))
 def kernel8(
     tiles,
     height,
@@ -407,8 +408,13 @@ def kernel8(
                             init=address48(8, height, width, gx, sx, sy, 1, tile, row, col)
                         )[0]
                         temp[word] = 0
-                        if (raw >= 0) & (raw <= sn - inp - 4):
-                            temp[word] = mem('ld32', T.address_of(Source[inp + raw]))
+                        # inp is a runtime offset now, not a nonnegative
+                        # constant. Guard the complete 4-byte pointer before
+                        # taking its address; safe-memory lowering must not
+                        # turn the address_of operand into a conditional load.
+                        inputbase = T.alloc_var('int32', init=inp + raw)[0]
+                        if (raw >= 0) & (inputbase >= 0) & (inputbase <= sn - 4):
+                            temp[word] = mem('ld32', T.address_of(Source[inputbase]))
                     T.evaluate(
                         mem(
                             'sts128',

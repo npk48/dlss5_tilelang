@@ -6,9 +6,10 @@ import tilelang
 import tilelang.language as T
 from runtime.device import TARGET, CONFIG, EXECUTION_BACKEND
 from runtime.fp8_compiler import private_compile
+from tilelang_nr.common.runtime_jit import spatial_jit
 
 
-@tilelang.jit(out_idx=[], target=TARGET, execution_backend=EXECUTION_BACKEND, pass_configs=CONFIG)
+@spatial_jit(dynamic="n", out_idx=[], target=TARGET, execution_backend=EXECUTION_BACKEND, pass_configs=CONFIG)
 def _clear(n):
 
     @T.prim_func
@@ -23,7 +24,7 @@ def _clear(n):
     return main
 
 
-@tilelang.jit(out_idx=[], target=TARGET, execution_backend=EXECUTION_BACKEND, pass_configs=CONFIG)
+@spatial_jit(dynamic="arena_bytes offset height width pool_height pool_width", out_idx=[], target=TARGET, execution_backend=EXECUTION_BACKEND, pass_configs=CONFIG)
 def _padding(arena_bytes, offset, height, width, pool_height, pool_width):
     count = pool_height * pool_width * 512
 
@@ -65,15 +66,8 @@ def build_step(spec):
     if spec.name == "pool8_padding":
         arena = spec.tensor(0)
         offset, height, width, pool_height, pool_width = [spec.scalar(i) for i in range(1, 6)]
-        # A fully covered pool has no bytes to clear. Compiling this no-op lets
-        # TVM erase every kernel parameter, which TileLang 0.1.14's NVRTC
-        # adapter cannot represent (it emits the invalid `arg_values =`).
-        if (pool_height - 1) * 2 < height and (pool_width - 1) * 2 < width:
-            def run():
-                pass
-            run.kernel_launches = 0
-            run.workspace_bytes = 0
-            return run
+        # Always bind the runtime padding kernel, including fully covered pools.
+        # A later ragged geometry must not introduce a new compilation.
         with private_compile():
             kernel = _padding(arena.numel(), offset, height, width, pool_height, pool_width)
         return _bind(kernel, arena, offset)

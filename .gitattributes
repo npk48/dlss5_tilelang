@@ -2,3 +2,5 @@ model/*.bin filter=lfs diff=lfs merge=lfs -text
 model/*.pth filter=lfs diff=lfs merge=lfs -text
 model/native_guides/*.onnx filter=lfs diff=lfs merge=lfs -text
 native/nr/kernels/sm89/*.nrbin filter=lfs diff=lfs merge=lfs -text
+# TileLang cache manifests cover exact bytes; preserve generated artifacts.
+precompiled/tilelang/0.1.14/** -text

@@ -125,7 +125,14 @@ class TileLangNR(PlanRuntime):
             self.coverage[key] = {
                 "shape": list(features.shape),
                 "steps": len(records),
-                "tilelang_steps": len(records)
+                "tilelang_steps": len(records),
+                "runtime_geometry": {
+                    "deep_defines": dict(deep.defines),
+                    "arena_bytes": outer.arena.numel(),
+                    "arena_offsets": dict(outer.offsets),
+                    "arena_lengths": dict(outer.lengths),
+                    "step_grids": [list(spec.grid) for *_, spec, family in records],
+                },
             }
             self._finish_coverage(key, records)
             return outer, deep
@@ -145,7 +152,9 @@ class TileLangNR(PlanRuntime):
         return output
 
     def report(self):
+        from .common.runtime_jit import runtime_compilation_stats
         result = super().report()
+        result["runtime_compilation"] = runtime_compilation_stats()
         result.update(
             implementation="TileLang computation on the native packet/layout plan",
             actual_backend="tilelang-vit",

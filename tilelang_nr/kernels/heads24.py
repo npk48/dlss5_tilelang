@@ -5,6 +5,7 @@ The 797fd63 math, layouts, K32 order and launch geometry are retained.
 from tilelang_nr.instructions import instruction_source
 import torch
 import tilelang
+from tilelang_nr.common.runtime_jit import spatial_jit
 import tilelang.language as T
 from runtime.fp8_compiler import private_compile
 from tilelang_nr.common import wide as qualified
@@ -37,7 +38,7 @@ from tilelang_nr.common.joint import (
 JOINT_SOURCE_SHA256 = '708b5656c83488dddff69dde12b6a3b34723fe2257f1bf3922487d0a946a4df2'
 
 
-@tilelang.jit(**dict(_JIT, compile_flags=['-lineinfo']))
+@spatial_jit(dynamic="tiles height width gx sx sy rn sn wns inp out counter invn prn gn skip pin pon mn poolout", **dict(_JIT, compile_flags=['-lineinfo']))
 def _packet_fused(
     tiles,
     heads,
@@ -582,7 +583,7 @@ def _packet_fused(
     return kernel
 
 
-@tilelang.jit(**dict(_JIT, compile_flags=['-lineinfo']))
+@spatial_jit(dynamic="rows rn wn imn pn inp", **dict(_JIT, compile_flags=['-lineinfo']))
 def _packet_project(heads, rows, rn, wn, imn, pn, inp, woff):
 
     @T.prim_func

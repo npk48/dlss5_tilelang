@@ -1,22 +1,73 @@
 {
-  "bundle_id": "a413ad43e7ef53288851972cedd9fce980374b3f94827eb0c5c21807178b9cd5",
+  "bundle_id": "77c094caf0efcdc9be7174788669d6f4ecd45968ee2cbed21379e6f88607ea30",
   "tilelang_version": "0.1.14",
   "platform": "win32-AMD64",
   "target": "cuda -arch=sm_89",
+  "nr_spatial_policy": "Runtime geometry; architecture-only kernels, not a resolution catalog",
+  "nr_architecture_entries": 59,
+  "nr_factories": 16,
   "qualified_workload": {
-    "webui_output_hw": [
-      510,
-      549
+    "core_neural_hw": [
+      [
+        320,
+        384
+      ],
+      [
+        384,
+        512
+      ],
+      [
+        512,
+        640
+      ]
     ],
-    "nr_neural_hw": [
-      512,
-      640
+    "pipeline_output_hw": [
+      [
+        257,
+        321
+      ],
+      [
+        333,
+        481
+      ],
+      [
+        451,
+        601
+      ],
+      [
+        321,
+        257
+      ]
     ],
-    "mode": "rgb_estimated",
-    "nr_passes": 1
+    "continuous_frames": 10,
+    "switchback": true,
+    "pipeline_neural_hw": [
+      [
+        320,
+        448
+      ],
+      [
+        384,
+        576
+      ],
+      [
+        512,
+        704
+      ],
+      [
+        384,
+        384
+      ]
+    ],
+    "nr_pass_counts": [
+      1,
+      2,
+      1
+    ]
   },
-  "kernel_entries": 85,
-  "files": 510,
-  "bytes": 41730208,
-  "source": "Compiled from an empty repo-local cache with C:/work/dlss5_remake/.venv; cache-only replay passed with an intentionally missing CUDA toolchain."
+  "kernel_entries": 64,
+  "files": 436,
+  "bytes": 28073517,
+  "source": "Exact TileLang cache entries tagged during real Engine.run. Replaces obsolete static NR cache entries; retains unrelated auxiliary cache entries.",
+  "nr_unique_cache_entries": 53
 }

@@ -59,7 +59,7 @@ dlss5_remake/
 │   ├── metric_video_*.pth         # Metric Video Depth Anything Small（Git LFS）
 │   ├── guide_models.json          # guide checkpoint hash、来源和固定版本
 │   └── WEIGHT_RIGHTS.md           # 权重与再分发边界
-├── precompiled/tilelang/          # 有明确平台/shape 边界的 tracked cache seed
+├── precompiled/tilelang/          # 限定平台、NR 空间通用的 tracked cache seed
 ├── webui/                         # 精简的浏览器前端
 ├── docs/WEBUI.md                  # WebUI、Engine 和 HTTP API 说明
 └── requirements.txt
@@ -128,7 +128,7 @@ $env:DLSS5_FP8_TOOLCHAIN = "C:\path\to\cuda12.8"
 $env:NATIVE_NR_TOOLCHAIN = "C:\path\to\cuda12.8"   # 仅 CUDA reference
 ```
 
-缺少工具链时，已经命中预编译 cache 的 shape 仍可运行；出现新 shape、cache miss 或源码变化时会明确编译失败，不会退回其他 NR backend。
+NR 的空间几何已经运行时化：同一组 TileLang kernels 可绑定新网格，不再因 NR 尺寸改变重新编译。缺少工具链时，命中当前 bundle 的 NR 仍可运行；源码、模型结构、平台变化或资产缺失引起的编译需求会明确报错，不会回退其他 NR backend。其他管线部件仍可能按自己的尺寸首次编译。
 
 ## WebUI
 
@@ -220,16 +220,13 @@ CUDA reference 与 TileLang NR 已在同一 320×384 packet 上验证逐位一�
 
 ## TileLang 预编译缓存
 
-`precompiled/tilelang/` 不是通用二进制发行版，也不是旧开发仓库的完整 cache。当前 bundle 只明确覆盖：
+`precompiled/tilelang/` 是 TileLang `0.1.14`、Windows `win32-AMD64`、SM89 的紧凑 cache seed。NR 使用运行时 H/W、网格、buffer 长度、offset 与路由；通道、MMA/FP8 分片和模型结构继续编译期特化。它不是有限分辨率目录。
 
-- TileLang `0.1.14`
-- `win32-AMD64`
-- CUDA target `sm_89`
-- WebUI output `510×549`
-- NR neural shape `512×640`
-- RGB-estimated、1 个 NR pass
+完整 NR 在 `320×384 → 384×512 → 512×640 → 320×384` 上与改造前 TileLang 逐位一致，新网格和切回不新增编译。实际 `Engine.run` 也覆盖混合横竖尺寸、连续帧和 NR pass/settings 改变。
 
-默认启动会把 tracked bundle 一次性复制到可写、Git 忽略的 `.cache/tilelang/`。显式设置 `TILELANG_CACHE_DIR` 时不会自动 seed。其他输出尺寸、NR work size、版本、平台或源码变化仍可能首次编译。
+默认启动将 bundle seed 到可写、Git 忽略的 `.cache/tilelang/`；显式设置 `TILELANG_CACHE_DIR` 时不会自动 seed。版本、平台、模型结构或源码变化仍可能需要编译。FSR/guide 等非 NR 部件不在“换 NR 网格免编译”的承诺范围内。
+
+运行证据、准备时间和稳态性能回退见 [TileLang 动态空间验证](native/qualification/tilelang-runtime-spatial.json)。稳态并非零代价：共享 launch 绑定削减了回退，但没有宣称与静态版本性能相同。
 
 Bundle 的 ID、文件数和体积见 `precompiled/tilelang/bundle.json`。它保留 `host_kernel.cu` 与 `device_kernel.cu`，因为 TileLang 0.1.14 从磁盘重建 `JITKernel` 时会校验并读取这些文件。
 
@@ -239,5 +236,5 @@ Bundle 的 ID、文件数和体积见 `precompiled/tilelang/bundle.json`。它�
 - CUDA reference、原 CUDA distribution 与 TileLang NR 在确定性 320×384 packet 上逐位一致。
 - RGB-estimated 路径使用 RAFT-small 与 Metric Video Depth Anything Small；估计 guide 不是真实游戏 depth/motion。
 - 当前仓库只验证 SM89 与默认 CUDA stream；其他 GPU 架构和 graph/non-default stream 不自动兼容。
-- 预编译 cache 只对其 manifest 声明的环境与 shape 作保证；工具链仍是新 shape 的必要依赖。
+- NR 预编译 cache 限定 manifest 声明的平台/结构，不限定 NR 空间网格；首次无缓存编译仍可能较慢。
 - 本仓库不会因代码重构自动获得模型权重、训练数据或第三方组件的新许可。

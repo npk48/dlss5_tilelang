@@ -4,6 +4,18 @@ import contextvars,contextlib,ctypes as C,importlib,os,threading
 from pathlib import Path
 _enabled=contextvars.ContextVar('dlss5_fp8_compiler',default=False)
 _lock=threading.RLock();_installed=False;_compiler=None
+_private_nvrtc_calls = 0
+_private_nvrtc_by_owner = {}
+_compile_owner = contextvars.ContextVar('dlss5_fp8_compile_owner', default='unscoped')
+
+
+def compilation_stats():
+ with _lock:
+  return {
+   "private_nvrtc_calls": _private_nvrtc_calls,
+   "by_owner": dict(_private_nvrtc_by_owner),
+  }
+
 
 class PrivateCompiler:
  def __init__(self):
@@ -35,6 +47,10 @@ class PrivateCompiler:
   source=('#include <tl_templates/cuda/nvrtc_std.h>\n'+code).encode();program=C.c_void_p()
   self.check(self.create(C.byref(program),source,b'fp8_block1',0,None,None))
   try:
+   global _private_nvrtc_calls
+   _private_nvrtc_calls += 1
+   owner = _compile_owner.get()
+   _private_nvrtc_by_owner[owner] = _private_nvrtc_by_owner.get(owner, 0) + 1
    args=(C.c_char_p*len(opts))(*(x.encode() for x in opts));status=self.compile(program,len(opts),args)
    if status:
     n=C.c_size_t();self.check(self.logsize(program,C.byref(n)));log=C.create_string_buffer(n.value);self.check(self.log(program,log));raise RuntimeError(log.value.decode('utf-8','replace'))
@@ -58,7 +74,11 @@ def install():
   lib.compile_cuda=dispatch;_installed=True
 
 @contextlib.contextmanager
-def private_compile():
+def private_compile(owner=None):
  install();token=_enabled.set(True)
+ owner_token = _compile_owner.set(owner) if owner is not None else None
  try:yield
- finally:_enabled.reset(token)
+ finally:
+  if owner_token is not None:
+   _compile_owner.reset(owner_token)
+  _enabled.reset(token)

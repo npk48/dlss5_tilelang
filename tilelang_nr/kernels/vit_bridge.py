@@ -47,7 +47,7 @@ def supports(name):
     return name in NAMES
 
 
-@_jit
+@_jit(dynamic="sizes rows tails")
 def _attention(sizes, rows, tails):
     (n0, v0), (n1, v1) = tails
     sq, sk, sv, so = sizes
@@ -58,8 +58,8 @@ def _attention(sizes, rows, tails):
         K: T.Tensor((sk, ), 'uint8'),
         V: T.Tensor((sv, ), 'uint8'),
         O: T.Tensor((so, ), 'uint8'),
-        C0: T.Tensor((max(n0, 1), ), 'int32'),
-        C1: T.Tensor((max(n1, 1), ), 'int32')
+        C0: T.Tensor((T.max(n0, 1), ), 'int32'),
+        C1: T.Tensor((T.max(n1, 1), ), 'int32')
     ):
         with T.Kernel(32, T.ceildiv(rows, 256), threads=128) as (head, block):
             T.import_source(_HEADER)
@@ -272,7 +272,7 @@ def stage_matrix(Sh, A, W, Pack, mt, nt, base, page, rows, K, N, PK, PAGE, trans
     T.evaluate(mem('commit'))
 
 
-@_jit
+@_jit(dynamic="sizes rows PH PW tails")
 def _matrix(sizes, rows, K, N, splits, mode, transition, activate, PH, PW, flags, tails):
     (n0, v0), (n1, v1) = tails
     sa, sw, ss, sp, sr, sm, spk, srt, sg = sizes
@@ -294,8 +294,8 @@ def _matrix(sizes, rows, K, N, splits, mode, transition, activate, PH, PW, flags
         Pack: T.Tensor((spk, ), 'int32'),
         Route: T.Tensor((srt, ), 'uint16'),
         G: T.Tensor((sg, ), 'float16'),
-        C0: T.Tensor((max(n0, 1), ), 'int32'),
-        C1: T.Tensor((max(n1, 1), ), 'int32')
+        C0: T.Tensor((T.max(n0, 1), ), 'int32'),
+        C1: T.Tensor((T.max(n1, 1), ), 'int32')
     ):
         with T.Kernel(T.ceildiv(rows, 128), N // 128, splits, threads=128) as (mt, nt, split):
             T.import_source(_HEADER)
@@ -628,7 +628,7 @@ def denominator(c, r, h, l):
     return add(hh(total), hh(total >> 16))
 
 
-@_jit
+@_jit(dynamic="sizes DT DP tails")
 def _qkv(sizes, DT, DP, tails):
     (n0, v0), (n1, v1) = tails
     sa, sw, sraw, sq, sk, sv, ss = sizes
@@ -642,8 +642,8 @@ def _qkv(sizes, DT, DP, tails):
         K: T.Tensor((sk, ), 'uint8'),
         V: T.Tensor((sv, ), 'uint8'),
         Scale: T.Tensor((ss, ), 'float32'),
-        C0: T.Tensor((max(n0, 1), ), 'int32'),
-        C1: T.Tensor((max(n1, 1), ), 'int32')
+        C0: T.Tensor((T.max(n0, 1), ), 'int32'),
+        C1: T.Tensor((T.max(n1, 1), ), 'int32')
     ):
         with T.Kernel(T.ceildiv(DT, 128) * 16, threads=128) as block:
             T.import_source(_HEADER)

@@ -14,10 +14,11 @@ _CONFIG = {
 }
 
 
-def _jit(fn):
-    return tilelang.jit(
-        target=TARGET, execution_backend=EXECUTION_BACKEND, pass_configs=_CONFIG
-    )(fn)
+def _jit(*, dynamic):
+    from tilelang_nr.common.runtime_jit import spatial_jit
+    return spatial_jit(
+        dynamic=dynamic, target=TARGET, execution_backend=EXECUTION_BACKEND, pass_configs=_CONFIG
+    )
 
 
 @T.macro
@@ -176,7 +177,7 @@ def akoff(r, k):
     return (r & 7) * 64 + (r // 8) * 4 + (k & 3) + ((k & 12) << 2) + ((k & 16) >> 1)
 
 
-@_jit
+@_jit(dynamic="size value")
 def _completion(size, value):
 
     @T.prim_func
@@ -217,8 +218,8 @@ def _producer(spec, factory, args, index, fuse_completion):
             if region.count:
                 view = spec.memory.resolve(region.pointer, torch.int32).narrow(0, 0, region.count)
                 regions.append((view, region.count, region.value))
-    # Native Completion has at most two regions. Absent formals are compile-time
-    # dead and alias existing storage, including during a null-input factory call.
+    # Completion has a fixed two-region ABI. Runtime counts disable absent
+    # regions; dummy views keep the buffer formals valid without specialization.
     dummy = spec.memory.buffers[0].view(torch.int32).reshape(-1)[:1]
     views = [r[0] for r in regions] if fuse_completion else []
     shape = [(r[1], r[2]) for r in regions] if fuse_completion else []
